@@ -1,0 +1,13 @@
+﻿{
+  "dependencies": {
+    "FontAwesome.WPF": "4.7.0.9"
+  },
+  "frameworks": {
+    "net452": {}
+  },
+  "runtimes": {
+    "win": {},
+    "win-x64": {},
+    "win-x86": {}
+  }
+}

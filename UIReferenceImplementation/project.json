@@ -1,0 +1,14 @@
+﻿{
+  "dependencies": {
+    "MyScript.InteractiveInk.Wpf": "1.1.0",
+    "System.Json": "4.4.0"
+  },
+  "frameworks": {
+    "net452": {}
+  },
+  "runtimes": {
+    "win": {},
+    "win-x64": {},
+    "win-x86": {}
+  }
+}

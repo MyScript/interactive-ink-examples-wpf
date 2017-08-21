@@ -1,0 +1,69 @@
+﻿// Copyright MyScript. All right reserved.
+
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Input;
+
+namespace MyScript.IInk.UIReferenceImplementation
+{
+    public class LayerControl : Label
+    {      
+        public Renderer Renderer { get; set; }
+        public ImageLoader ImageLoader { get; set; }
+
+        /// <summary>Redraw the Layer Control </summary>
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+
+            if (Renderer != null)
+            {
+                int x = 0;
+                int y = 0;
+                int width = (int)Math.Round(ActualWidth);
+                int height = (int)Math.Round(ActualHeight);
+                LayerType layerType = LayerType.LayerType_ALL;
+                Canvas canvas = new Canvas(drawingContext, Renderer.RenderTarget, ImageLoader);
+
+                if (this.Name.Equals("backgroundLayer"))
+                    layerType = LayerType.BACKGROUND;
+                if (this.Name.Equals("modelLayer"))
+                    layerType = LayerType.MODEL;
+                if (this.Name.Equals("captureLayer"))
+                    layerType = LayerType.CAPTURE;
+                if (this.Name.Equals("temporaryLayer"))
+                    layerType = LayerType.TEMPORARY;
+
+                switch (layerType)
+                {
+                    case LayerType.BACKGROUND:
+                        Renderer.DrawBackground(x, y, width, height, canvas);
+                        break;
+
+                    case LayerType.MODEL:
+                        Renderer.DrawModel(x, y, width, height, canvas);
+                        break;
+
+                    case LayerType.TEMPORARY:
+                        Renderer.DrawTemporaryItems(x, y, width, height, canvas);
+                        break;
+
+                    case LayerType.CAPTURE:
+                        Renderer.DrawCaptureStrokes(x, y, width, height, canvas);
+                        break;
+                }
+            }
+        }
+
+        /// <summary> Force to redraw the Layer Control </summary>
+        public void Update()
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                this.InvalidateVisual();
+            }));
+        }
+    }
+}

@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="MyScript.IInk.UIReferenceImplementation.EditorUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:UIReferenceImplementation="clr-namespace:MyScript.IInk.UIReferenceImplementation"
+             mc:Ignorable="d" 
+             >
+    <Grid>
+        <UIReferenceImplementation:LayerControl x:Name="backgroundLayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        <UIReferenceImplementation:LayerControl x:Name="modelLayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        <UIReferenceImplementation:LayerControl x:Name="temporaryLayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        <UIReferenceImplementation:LayerControl x:Name="captureLayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               SizeChanged="Control_SizeChanged"
+                               StylusDown="captureLayer_StylusDown"
+                               StylusUp="captureLayer_StylusUp"
+                               StylusMove="captureLayer_StylusMove"
+                               TouchDown="captureLayer_TouchDown"
+                               TouchUp="captureLayer_TouchUp"
+                               TouchMove="captureLayer_TouchMove"                               
+                               MouseRightButtonDown="captureLayer_MouseRightButtonDown"
+                               MouseLeftButtonDown="captureLayer_MouseLeftButtonDown"
+                               MouseLeftButtonUp="captureLayer_MouseLeftButtonUp"
+                               MouseMove="captureLayer_MouseMove"
+                               MouseWheel="captureLayer_MouseWheel"
+                               Padding="0"
+                               >
+            <UIReferenceImplementation:SmartGuideUserControl x:Name="smartGuide" Visibility="Hidden" />
+        </UIReferenceImplementation:LayerControl>
+    </Grid>
+</UserControl>
