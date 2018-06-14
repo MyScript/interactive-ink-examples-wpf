@@ -478,25 +478,25 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void OnSelectionChanged(string[] blockIds)
         {
-            ContentBlock block = null;
+            _selectedBlock = null;
 
             foreach (var blockId in blockIds)
             {
-                var block_ = _editor.GetBlockById(blockId);
+                var block = _editor.GetBlockById(blockId);
 
-                if ( (block_ != null) && (block_.Type == "Text") )
+                if ( (block != null) && (block.Type == "Text") )
                 {
-                    block = block_;
+                    _selectedBlock = block;
                     break;
                 }
             }
 
             bool selectionChanged = false;
 
-            if ((block != null) && (_currentBlock != null))
-                selectionChanged = (_currentBlock.Id != block.Id);
+            if ((_selectedBlock != null) && (_currentBlock != null))
+                selectionChanged = (_currentBlock.Id != _selectedBlock.Id);
             else
-                selectionChanged = (block != _currentBlock);
+                selectionChanged = (_selectedBlock != _currentBlock);
 
             if (selectionChanged)
             {
