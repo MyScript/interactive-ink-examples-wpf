@@ -94,6 +94,10 @@
                         <ComboBoxItem Selected="Clear_Click">
                             <TextBlock Text="Clear" />
                         </ComboBoxItem>
+                        <ComboBoxItem Selected="Convert_Click">
+                            <TextBlock Text="Convert" />
+                        </ComboBoxItem>
+                        <Separator />
                         <ComboBoxItem Selected="New_Click">
                             <TextBlock Text="New" />
                         </ComboBoxItem>

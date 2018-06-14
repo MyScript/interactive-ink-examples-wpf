@@ -172,6 +172,22 @@ namespace MyScript.IInk.Demo
             _editor.Clear();
         }
 
+
+        private void Convert_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var supportedStates = _editor.GetSupportedTargetConversionStates(null);
+
+                if ( (supportedStates != null) && (supportedStates.Count() > 0) )
+                    _editor.Convert(null, supportedStates[0]);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void ResetZoom_Click(object sender, RoutedEventArgs e)
         {
             UcEditor.ResetView(true);
