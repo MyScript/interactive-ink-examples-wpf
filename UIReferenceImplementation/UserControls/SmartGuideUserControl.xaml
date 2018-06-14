@@ -10,7 +10,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="32" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="32" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <Label x:Name="styleItem" Grid.Row="0" Grid.Column="0" Content="¶"

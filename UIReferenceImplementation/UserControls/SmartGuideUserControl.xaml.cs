@@ -55,7 +55,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         private Editor _editor;
 
-        public event MoreClickedHandler MoreClicked;
+        private event MoreClickedHandler _moreClicked;
 
         private ContentBlock _activeBlock;
         private ContentBlock _selectedBlock;
@@ -82,6 +82,12 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             get { return _editor; }
             set { SetEditor(value); }
+        }
+
+        public event MoreClickedHandler MoreClicked
+        {
+            add { _moreClicked += value; UpdateMoreItemVisibility(); }
+            remove { _moreClicked -= value; UpdateMoreItemVisibility(); }
         }
 
         public ContentBlock ContentBlock
@@ -138,6 +144,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             // Sub-items
             styleItem.IsEnabled = false;
             moreItem.IsEnabled = false;
+            UpdateMoreItemVisibility();
 
             textItem.IsEnabled = false;
             textItem.Children.Clear();
@@ -146,6 +153,11 @@ namespace MyScript.IInk.UIReferenceImplementation
             scrollItem.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
             scrollItem.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
             scrollItem.IsDeferredScrollingEnabled = false;
+        }
+
+        private void UpdateMoreItemVisibility()
+        {
+            moreItem.Visibility = (_moreClicked != null) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void SetEditor(Editor editor)
@@ -766,9 +778,10 @@ namespace MyScript.IInk.UIReferenceImplementation
                         ++idx;
                     }
                 }
-                else if (GetRectOfObject(moreItem).Contains(xy))
+                else if (moreItem.Visibility == Visibility.Visible)
                 {
-                    OnMoreClicked(GetInputPosition(e, null));
+                    if (GetRectOfObject(moreItem).Contains(xy))
+                        OnMoreClicked(GetInputPosition(e, null));
                 }
             }
         }
@@ -804,7 +817,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             if (_currentBlock != null)
             {
-                MoreClicked?.Invoke(globalPos);
+                _moreClicked?.Invoke(globalPos);
             }
         }
 
