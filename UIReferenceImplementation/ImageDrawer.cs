@@ -9,16 +9,16 @@ namespace MyScript.IInk.UIReferenceImplementation
 {
     public class ImageDrawer : IImageDrawer
     {
+        private static Graphics.Color _defaultBackgroundColor = new Graphics.Color(0xffffffff);
+
         private RenderTargetBitmap _image;
-        private float _dpiX;
-        private float _dpiY;
 
         public ImageLoader ImageLoader { get; set; }
+        public Graphics.Color BackgroundColor { get; set; }
 
-        public ImageDrawer(float dpiX, float dpiY)
+        public ImageDrawer()
         {
-            _dpiX = dpiX;
-            _dpiY = dpiY;
+            BackgroundColor = _defaultBackgroundColor;
         }
 
         public void PrepareImage(int width, int height)
@@ -26,7 +26,9 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (_image != null)
                 _image = null;
 
-            _image = new RenderTargetBitmap(width, height, _dpiX, _dpiY, PixelFormats.Default);
+            // Use 96 dpi to match the DIP unit used by WPF DrawingContext
+            // (no conversion from DIP to pixel on _image.Render())
+            _image = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Default);
         }
 
         public void SaveImage(string path)
@@ -78,7 +80,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         public void Invalidate(Renderer renderer, LayerType layers)
         {
             if (_image != null && renderer != null)
-                Invalidate(renderer, 0, 0, (int)_image.Width, (int)_image.Height, layers);
+                Invalidate(renderer, 0, 0, _image.PixelWidth, _image.PixelHeight, layers);
         }
 
         public void Invalidate(Renderer renderer, int x, int y, int width, int height, LayerType layers)
@@ -90,6 +92,9 @@ namespace MyScript.IInk.UIReferenceImplementation
                 using (DrawingContext drawingContext = drawingVisual.RenderOpen())
                 {
                     var canvas = new Canvas(drawingContext, this, ImageLoader);
+                    var color = (BackgroundColor != null) ? BackgroundColor : _defaultBackgroundColor;
+
+                    canvas.Clear(0, 0, _image.PixelWidth, _image.PixelHeight, color);
 
                     if (layers.HasFlag(LayerType.BACKGROUND))
                         renderer.DrawBackground(x, y, width, height, canvas);
@@ -104,7 +109,6 @@ namespace MyScript.IInk.UIReferenceImplementation
                         renderer.DrawCaptureStrokes(x, y, width, height, canvas);
                 }
 
-                _image.Clear();
                 _image.Render(drawingVisual);
             }
         }

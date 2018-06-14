@@ -676,7 +676,7 @@ namespace MyScript.IInk.Demo
 
                         try
                         {
-                            var drawer = new ImageDrawer(_editor.Renderer.DpiX, _editor.Renderer.DpiY);
+                            var drawer = new ImageDrawer();
 
                             drawer.ImageLoader = UcEditor.ImageLoader;
 
@@ -708,7 +708,7 @@ namespace MyScript.IInk.Demo
                     // export block to a file
                     var localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                     var clipboardPath =  Path.Combine(localFolder, "MyScript", "tmp/clipboard.gvml");
-                    var drawer = new ImageDrawer(_editor.Renderer.DpiX, _editor.Renderer.DpiY);
+                    var drawer = new ImageDrawer();
 
                     drawer.ImageLoader = UcEditor.ImageLoader;
 

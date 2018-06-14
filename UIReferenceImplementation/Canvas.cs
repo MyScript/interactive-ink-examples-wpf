@@ -339,6 +339,17 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
+        /// <summary>Clear canvas with color according to region</summary>
+        public void Clear(float x, float y, float width, float height, Color color)
+        {
+            var color_ = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb((byte)color.A, (byte)color.R, (byte)color.G, (byte)color.B));
+            var rect = new Rect(x, y, width, height);
+
+            var clipped = PushRenderStates();
+            _drawingContext.DrawRectangle(color_, null, rect);
+            PopRenderStates(clipped);
+        }
+
         /// <summary>Draw Rectangle to canvas according to region</summary>
         public void DrawRectangle(float x, float y, float width, float height)
         {
