@@ -879,10 +879,6 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var wordView = (Label)item.Tag;
                 var wordIndex = (int)menu.Tag;
                 var wordLabel = (string)item.Header;
-
-                _currentWords[wordIndex].Label = wordLabel;
-                wordView.Content = wordLabel;
-
                 string jiixStr = _editor.Export_(_currentBlock, MimeType.JIIX);
                 var jiix = JsonValue.Parse(jiixStr) as JsonObject;
                 var jiixWords = (JsonArray)jiix["words"];
@@ -890,6 +886,8 @@ namespace MyScript.IInk.UIReferenceImplementation
                 jiixWord["label"] = wordLabel;
                 jiixStr = jiix.ToString();
                 _editor.Import_(MimeType.JIIX, jiixStr, _currentBlock);
+                _currentWords[wordIndex].Label = wordLabel;
+                wordView.Content = wordLabel;
             }
             catch
             {
