@@ -35,7 +35,6 @@ namespace MyScript.IInk.UIReferenceImplementation
         private FontStyle _fontStyle;
         private double _fontSize;
         private System.Windows.Media.FillRule _fillRule;
-        private float _baseline;
 
         private Dictionary<string, Group> _groups;
         private Group _activeGroup;
@@ -55,8 +54,6 @@ namespace MyScript.IInk.UIReferenceImplementation
             _fontStyle = FontStyles.Normal;
             _fontWeight = FontWeights.Normal;
             _fontStretch = FontStretches.Normal;
-
-            _baseline = 1.0f;
 
             _groups = new Dictionary<string, Group>();
             _activeGroup = new Group(Rect.Empty, new Transform());
@@ -188,28 +185,6 @@ namespace MyScript.IInk.UIReferenceImplementation
                 _fontWeight = FontWeights.Light;
 
             _fontSize = size;
-
-            // Compute the baseline offset by processing one character
-            var textBlock = new System.Windows.Controls.TextBlock();
-            var textRun = new System.Windows.Documents.Run("k");
-
-            textRun.FontFamily = _fontFamily;
-            textRun.FontSize = _fontSize;
-            textRun.FontWeight = _fontWeight;
-            textRun.FontStyle = _fontStyle;
-            textRun.FontStretch = _fontStretch;
-
-            textBlock.FontFamily = _fontFamily;
-            textBlock.Padding = new Thickness(0.0);
-            textBlock.Margin = new Thickness(0.0);
-            textBlock.TextWrapping = TextWrapping.NoWrap;
-            textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-            textBlock.VerticalAlignment = VerticalAlignment.Top;
-            textBlock.Inlines.Add(textRun);
-            textBlock.Measure(new Size(System.Double.PositiveInfinity, System.Double.PositiveInfinity));
-            textBlock.Arrange(new Rect(textBlock.DesiredSize));
-
-            _baseline = (float)textBlock.BaselineOffset;
         }
 
         public void StartGroup(string id, float x, float y, float width, float height, bool clipContent)
@@ -460,8 +435,9 @@ namespace MyScript.IInk.UIReferenceImplementation
                 ft.TextAlignment = TextAlignment.Left;
 
                 // Draw the text
+                var baseline = (float)ft.Baseline;
                 var clipped = PushRenderStates();
-                _drawingContext.DrawText(ft, new System.Windows.Point(x, y - _baseline));
+                _drawingContext.DrawText(ft, new System.Windows.Point(x, y - baseline));
                 PopRenderStates(clipped);
             }
         }
