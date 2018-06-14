@@ -11,35 +11,38 @@
     <ResourceDictionary Source="/MyScript.InteractiveInk.UIReferenceImplementation.Wpf;component/ResourceDictionary.xaml"/>
   </UserControl.Resources>
 
-  <Grid>
-    <!-- Declare normal view content here -->
-    <Border Grid.Row="2"  Background="WhiteSmoke" 
-        BorderThickness="1" Width="300" Height="325" Panel.ZIndex="10">
+  <Grid HorizontalAlignment="Center" VerticalAlignment="Center"
+        MinWidth="300" Width="auto"
+        MinHeight="300" Height="auto">
+    <Border Background="WhiteSmoke" 
+        BorderThickness="1" Panel.ZIndex="10">
       <Border.Effect>
         <DropShadowEffect ShadowDepth="0" BlurRadius="10"/>
       </Border.Effect>
-      <Grid Margin="15"   >
+
+      <Grid Margin="15">
         <Grid.RowDefinitions>
           <RowDefinition Height="auto"></RowDefinition>
           <RowDefinition Height="auto"></RowDefinition>
           <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Button Name="Close" Grid.Row="0"  Click="Close_Click"  HorizontalAlignment="Right"  Background="Transparent"  BorderThickness="0">
+        <Button Name="Close" Grid.Row="0" Click="Close_Click" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0">
           <Button.Content>
             <Font:ImageAwesome Style="{StaticResource Icon }" Icon="Close" Width="10" Height="10" ></Font:ImageAwesome>
           </Button.Content>
         </Button>
+
         <TextBlock Text="Choose type of content" FontSize="18" Grid.Row="1"></TextBlock>
-        <Grid Grid.Row="2" Margin="20" >
+
+        <Grid Grid.Row="2" Margin="10" >
           <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition  Width="auto"></ColumnDefinition>
-            <ColumnDefinition  ></ColumnDefinition>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
           </Grid.ColumnDefinitions>
 
-          <StackPanel x:Name="Types"  Grid.Column="1" Orientation="Vertical">
-          </StackPanel>
+          <StackPanel x:Name="Types" Grid.Column="1" Orientation="Vertical" />
         </Grid>
       </Grid>
     </Border>
