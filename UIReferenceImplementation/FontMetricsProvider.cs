@@ -147,6 +147,9 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                 for (int g = 0; g < charCount; ++g)
                 {
+                    if (idx >= glyphMetrics.Count)
+                        break;
+
                     if ( (g > 0) && (glyphRun.ClusterMap[g] == glyphRun.ClusterMap[g-1]) )
                     {
                         // Current character shares its glyph with the previous character (ligature)
