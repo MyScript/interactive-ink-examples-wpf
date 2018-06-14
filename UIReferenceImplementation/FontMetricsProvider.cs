@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace MyScript.IInk.UIReferenceImplementation
 {
-    public class FontMetricsProvider : IFontMetricsProvider
+    public class FontMetricsProvider : IFontMetricsProvider2
     {
         private float dpiX;
         private float dpiY;
@@ -34,17 +34,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             return (mmm / 25.4f) * dpi;
         }
 
-        public Rectangle[] GetCharacterBoundingBoxes(MyScript.IInk.Text.Text text, TextSpan[] spans)
-        {
-            List<Rectangle> rectangles = new List<Rectangle>();
-            if (Thread.CurrentThread == Application.Current.Dispatcher.Thread)
-                GetCharacterBoundingBoxes_(text, spans, rectangles, dpiX, dpiY);
-            else
-                Application.Current.Dispatcher.BeginInvoke(new Action(() => { GetCharacterBoundingBoxes_(text, spans, rectangles, dpiX, dpiY); })).Wait();
-            return rectangles.ToArray();
-        }
-
-        private static void GetCharacterBoundingBoxes_(MyScript.IInk.Text.Text text, TextSpan[] spans, List<Rectangle> rectangles, float dpiX, float dpiY)
+        private static void GetGlyphMetrics_(MyScript.IInk.Text.Text text, TextSpan[] spans, List<GlyphMetrics> glyphMetrics, float dpiX, float dpiY)
         {
             var firstStyle = spans.First().Style;
             var textBlock = new TextBlock();
@@ -96,37 +86,45 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             var baseline = (float)textBlock.BaselineOffset;
             var d = VisualTreeHelper.GetDrawing(textBlock);
-            WalkDrawingForText(d, rectangles, baseline, dpiX, dpiY);
+            WalkDrawingForText(d, glyphMetrics, baseline, dpiX, dpiY);
         }
 
-        private static void WalkDrawingForText(Drawing d, List<Rectangle> rectangles, float baseline, float dpiX, float dpiY)
+        private static void WalkDrawingForText(Drawing d, List<GlyphMetrics> glyphMetrics, float baseline, float dpiX, float dpiY)
         {
             var glyphs = d as GlyphRunDrawing;
 
             if (glyphs != null)
             {
-                // Use the bound from "glyphs.GlyphRun.BuildGeometry()" which seems
+                var glyphRun = glyphs.GlyphRun;
+
+                // Use the bound from "glyphRun.BuildGeometry()" which seems
                 // to be the best fitting one.
-                // (instead of other bounds from "glyphs.Bounds",
-                // "glyphs.GlyphRun.ComputeAlignmentBox" or "glyphs.GlyphRun.ComputeInkBoundingBox)"
-                var geometry = glyphs.GlyphRun.BuildGeometry();
+                // (instead of other bounds "glyphs.Bounds", "glyphRun.ComputeAlignmentBox"
+                // or "glyphRun.ComputeInkBoundingBox")
+                var geometry = glyphRun.BuildGeometry();
                 var rect = geometry.Bounds;
 
+                // For glyph without geometry (space)
                 if (rect.IsEmpty)
-                {
-                    // For glyph without geometry (space)
                     rect = new Rect(0.0, 0.0, 0.0, 0.0);
-                }
                          
                 var rectX = (float)rect.X;
-                var rectY = (float)rect.Y;
+                var rectY = (float)rect.Y - baseline;
                 var rectW = (float)rect.Width;
                 var rectH = (float)rect.Height;
 
-                rectY -= baseline;
+                var leftBearing = -(float)(glyphRun.GlyphTypeface.LeftSideBearings[glyphRun.GlyphIndices[0]] * glyphRun.FontRenderingEmSize);
+                var rightBearing = 0.0f;
 
-                var rect_ = new Rectangle(px2mm(rectX, dpiX), px2mm(rectY, dpiY), px2mm(rectW, dpiX), px2mm(rectH, dpiY));
-                rectangles.Add(rect_);
+                var glyphX = px2mm(rectX, dpiX);
+                var glyphY = px2mm(rectY, dpiY);
+                var glyphW = px2mm(rectW, dpiX);
+                var glyphH = px2mm(rectH, dpiY);
+                var glyphRect = new Rectangle(glyphX, glyphY, glyphW, glyphH);
+                var glyphLeftBearing = px2mm(leftBearing, dpiX);
+                var glyphRightBearing = px2mm(rightBearing, dpiX);
+
+                glyphMetrics.Add(new GlyphMetrics(glyphRect, glyphLeftBearing, glyphRightBearing));
             }
             else
             {
@@ -135,14 +133,47 @@ namespace MyScript.IInk.UIReferenceImplementation
                 if (g != null)
                 {
                     foreach (var child in g.Children)
-                        WalkDrawingForText(child, rectangles, baseline, dpiX, dpiY);
+                        WalkDrawingForText(child, glyphMetrics, baseline, dpiX, dpiY);
                 }
             }
+        }
+
+        public Rectangle[] GetCharacterBoundingBoxes(MyScript.IInk.Text.Text text, TextSpan[] spans)
+        {
+            List<GlyphMetrics> glyphMetrics = new List<GlyphMetrics>();
+
+            if (Thread.CurrentThread == Application.Current.Dispatcher.Thread)
+                GetGlyphMetrics_(text, spans, glyphMetrics, dpiX, dpiY);
+            else
+                Application.Current.Dispatcher.BeginInvoke(new Action(() => { GetGlyphMetrics_(text, spans, glyphMetrics, dpiX, dpiY); })).Wait();
+
+            List<Rectangle> rectangles = new List<Rectangle>();
+            foreach (var metrics in glyphMetrics)
+                rectangles.Add(metrics.BoundingBox);
+
+            return rectangles.ToArray();
         }
 
         public float GetFontSizePx(MyScript.IInk.Graphics.Style style)
         {
             return style.FontSize;
+        }
+
+        public bool SupportsGlyphMetrics()
+        {
+            return true;
+        }
+
+        public GlyphMetrics[] GetGlyphMetrics(MyScript.IInk.Text.Text text, TextSpan[] spans)
+        {
+            List<GlyphMetrics> glyphMetrics = new List<GlyphMetrics>();
+
+            if (Thread.CurrentThread == Application.Current.Dispatcher.Thread)
+                GetGlyphMetrics_(text, spans, glyphMetrics, dpiX, dpiY);
+            else
+                Application.Current.Dispatcher.BeginInvoke(new Action(() => { GetGlyphMetrics_(text, spans, glyphMetrics, dpiX, dpiY); })).Wait();
+
+            return glyphMetrics.ToArray();
         }
     }
 }
