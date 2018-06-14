@@ -327,12 +327,19 @@ namespace MyScript.IInk.Demo
             if (_editor.Part == null)
                 return;
 
-            var rootBlock = _editor.GetRootBlock();
             var contentBlock = _lastSelectedBlock;
+            if (contentBlock == null)
+                return;
+
+            var rootBlock = _editor.GetRootBlock();
+            var isRoot = contentBlock.Id == rootBlock.Id;
+            if (!isRoot && (contentBlock.Type == "Container") )
+                return;
 
             var onRawContent = part.Type == "Raw Content";
-            var isContainer = contentBlock.Type == "Container";
-            var isRoot = contentBlock.Id == _editor.GetRootBlock().Id;
+            var onTextDocument = part.Type == "Text Document";
+
+            var isEmpty = _editor.IsEmpty(contentBlock);
 
             var supportedTypes = _editor.SupportedAddBlockTypes;
             var supportedExports = _editor.GetSupportedExportMimeTypes(onRawContent ? rootBlock : contentBlock);
@@ -344,120 +351,100 @@ namespace MyScript.IInk.Demo
             var hasImports = (supportedImports != null) && supportedImports.Any();
             var hasStates = (supportedStates != null) && supportedStates.Any();
 
-            var displayConvert  = hasStates && !isContainer && !_editor.IsEmpty(contentBlock);
-            var displayAddBlock = hasTypes && isContainer;
-            var displayAddImage = false; // hasTypes && isContainer;
-            var displayRemove   = !isRoot && !isContainer;
-            var displayCopy     = !isRoot && !isContainer;
-            var displayPaste    = hasTypes && isContainer;
+            var displayConvert  = hasStates && !isEmpty;
+            var displayAddBlock = hasTypes && isRoot;
+            var displayAddImage = false; // hasTypes && isRoot;
+            var displayRemove   = !isRoot;
+            var displayCopy     = (onTextDocument ? !isRoot : !onRawContent);
+            var displayPaste    = hasTypes && isRoot;
             var displayImport   = hasImports;
             var displayExport   = hasExports;
-            var displayOfficeClipboard = hasExports && supportedExports.Contains(MimeType.OFFICE_CLIPBOARD);
+            var displayClipboard = hasExports && supportedExports.Contains(MimeType.OFFICE_CLIPBOARD);
 
             var contextMenu = new ContextMenu();
 
-            if (displayConvert)
-            {
-                MenuItem convertItem = new MenuItem();
-
-                convertItem.Header = "Convert";
-                convertItem.Click += ConvertBlock;
-                contextMenu.Items.Add(convertItem);
-            }
-
             if (displayAddBlock || displayAddImage)
             {
-                MenuItem addItem = new MenuItem();
-
-                addItem.Header = "Add...";
+                MenuItem addItem = new MenuItem { Header = "Add..." };
                 contextMenu.Items.Add(addItem);
 
                 if (displayAddBlock)
                 {
                     for (int i = 0; i < supportedTypes.Count(); ++i)
                     {
-                        MenuItem addBlockItem = new MenuItem();
-                        addBlockItem.Header = "Add " + supportedTypes[i];
-                        addBlockItem.Tag = supportedTypes[i];
+                        MenuItem addBlockItem = new MenuItem { Header = "Add " + supportedTypes[i], Tag = supportedTypes[i] };
                         addBlockItem.Click += AddBlock;
-
                         addItem.Items.Add(addBlockItem);
                     }
                 }
 
                 if (displayAddImage)
                 {
-                    MenuItem addImageItem = new MenuItem();
-
-                    addImageItem.Header = "Add Image";
+                    MenuItem addImageItem = new MenuItem { Header = "Add Image" };
                     addImageItem.Click += AddImage;
-
                     addItem.Items.Add(addImageItem);
                 }
             }
 
-            if (displayCopy)
-            {
-                MenuItem copyItem = new MenuItem();
-
-                copyItem.Header = "Copy";
-                copyItem.Click += Copy;
-                contextMenu.Items.Add(copyItem);
-            }
-
-            if (displayPaste)
-            {
-                MenuItem pasteItem = new MenuItem();
-
-                pasteItem.Header = "Paste";
-                pasteItem.Click += Paste;
-                contextMenu.Items.Add(pasteItem);
-            }
-
             if (displayRemove)
             {
-                MenuItem removeItem = new MenuItem();
-
-                removeItem.Header = "Remove";
+                MenuItem removeItem = new MenuItem { Header = "Remove" };
                 removeItem.Click += Remove;
                 contextMenu.Items.Add(removeItem);
             }
 
-            if (displayImport || displayExport)
+            if (displayConvert)
             {
-                MenuItem importExportItem = new MenuItem();
+                MenuItem convertItem = new MenuItem { Header = "Convert" };
+                convertItem.Click += ConvertBlock;
+                contextMenu.Items.Add(convertItem);
+            }
 
-                importExportItem.Header = "Import/Export...";
-                contextMenu.Items.Add(importExportItem);
+            if (displayCopy || displayClipboard || displayPaste)
+            {
+                MenuItem copyPasteItem = new MenuItem { Header = "Copy/Paste..." };
+                contextMenu.Items.Add(copyPasteItem);
 
-                if (displayImport)
+                //if (displayCopy)
                 {
-                    MenuItem importItem = new MenuItem();
-
-                    importItem.Header = "Import";
-                    importItem.Click += Import;
-
-                    importExportItem.Items.Add(importItem);
+                    MenuItem copyItem = new MenuItem {  Header = "Copy", IsEnabled = displayCopy };
+                    copyItem.Click += Copy;
+                    copyPasteItem.Items.Add(copyItem);
                 }
 
-                if (displayExport)
+                //if (displayClipboard)
                 {
-                    MenuItem exportItem = new MenuItem();
+                    MenuItem clipboardItem = new MenuItem { Header = "Copy To Clipboard (Microsoft Office)", IsEnabled = displayClipboard };
+                    clipboardItem.Click += CopyToClipboard;
+                    copyPasteItem.Items.Add(clipboardItem);
+                }
 
-                    exportItem.Header = "Export";
-                    exportItem.Click += Export;
-
-                    importExportItem.Items.Add(exportItem);
+                //if (displayPaste)
+                {
+                    MenuItem pasteItem = new MenuItem { Header = "Paste", IsEnabled = displayPaste };
+                    pasteItem.Click += Paste;
+                    copyPasteItem.Items.Add(pasteItem);
                 }
             }
 
-            if (displayOfficeClipboard)
+            if (displayImport || displayExport)
             {
-                MenuItem clipboardItem = new MenuItem();
+                MenuItem importExportItem = new MenuItem { Header = "Import/Export..." };
+                contextMenu.Items.Add(importExportItem);
 
-                clipboardItem.Header = "Copy To Clipboard (Microsoft Office)";
-                clipboardItem.Click += CopyToClipboard;
-                contextMenu.Items.Add(clipboardItem);
+                //if (displayImport)
+                {
+                    MenuItem importItem = new MenuItem { Header = "Import", IsEnabled = displayImport };
+                    importItem.Click += Import;
+                    importExportItem.Items.Add(importItem);
+                }
+
+                //if (displayExport)
+                {
+                    MenuItem exportItem = new MenuItem { Header = "Export", IsEnabled = displayExport };
+                    exportItem.Click += Export;
+                    importExportItem.Items.Add(exportItem);
+                }
             }
 
             if (contextMenu.Items.Count > 0)
@@ -474,7 +461,7 @@ namespace MyScript.IInk.Demo
             _lastPointerPosition = new Graphics.Point((float)pos.X, (float)pos.Y);
             _lastSelectedBlock = _editor.HitBlock(_lastPointerPosition.X, _lastPointerPosition.Y);
 
-            if (_lastSelectedBlock == null)
+            if ( (_lastSelectedBlock == null) || (_lastSelectedBlock.Type == "Container") )
                 _lastSelectedBlock = _editor.GetRootBlock();
 
             if (_lastSelectedBlock != null)
@@ -578,7 +565,14 @@ namespace MyScript.IInk.Demo
 
         private void Paste(object sender, RoutedEventArgs e)
         {
-            _editor.Paste(_lastPointerPosition.X, _lastPointerPosition.Y);
+            try
+            {
+                _editor.Paste(_lastPointerPosition.X, _lastPointerPosition.Y);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Import(object sender, RoutedEventArgs e)
