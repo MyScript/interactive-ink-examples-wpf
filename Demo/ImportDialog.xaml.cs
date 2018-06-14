@@ -1,6 +1,7 @@
 ﻿// Copyright MyScript. All right reserved.
 
 using System.Windows;
+using System.Windows.Controls;
 
 namespace MyScript.IInk.Demo
 {
@@ -16,6 +17,8 @@ namespace MyScript.IInk.Demo
 
             Owner = parent;
             Title = title;
+
+            WrappingCheckBox.IsChecked = true; // call WrappingCheckBox_Toggle
             ResultTextBox.Text = "";
 
             MimeTypeComboBox.Items.Clear();
@@ -43,7 +46,17 @@ namespace MyScript.IInk.Demo
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
+            DialogResult = false;
+        }
+
+        private void WrappingCheckBox_Toggle(object sender, RoutedEventArgs e)
+        {
+            var checkBox = sender as CheckBox;
+            var isChecked = (bool)checkBox.IsChecked;
+
+            ResultTextBox.TextWrapping = (isChecked ? TextWrapping.Wrap : TextWrapping.NoWrap);
+            ResultTextBox.HorizontalScrollBarVisibility = (isChecked ? ScrollBarVisibility.Hidden : ScrollBarVisibility.Auto);
+            ResultTextBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
         }
     }
 }
