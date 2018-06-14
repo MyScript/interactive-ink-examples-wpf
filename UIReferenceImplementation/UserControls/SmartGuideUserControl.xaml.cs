@@ -234,7 +234,9 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                 try
                 {
-                    jiixStr = _editor.Export_(_currentBlock, MimeType.JIIX);
+                    var conf = _editor.Engine.CreateParameterSet();
+                    conf.SetBoolean("export.jiix.strokes", false);
+                    jiixStr = _editor.Export_(_currentBlock, MimeType.JIIX, conf);
                 }
                 catch
                 {
@@ -879,7 +881,9 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var wordView = (Label)item.Tag;
                 var wordIndex = (int)menu.Tag;
                 var wordLabel = (string)item.Header;
-                string jiixStr = _editor.Export_(_currentBlock, MimeType.JIIX);
+                var conf = _editor.Engine.CreateParameterSet();
+                conf.SetBoolean("export.jiix.strokes", false);
+                string jiixStr = _editor.Export_(_currentBlock, MimeType.JIIX, conf);
                 var jiix = JsonValue.Parse(jiixStr) as JsonObject;
                 var jiixWords = (JsonArray)jiix["words"];
                 var jiixWord = (JsonObject)jiixWords[wordIndex];
