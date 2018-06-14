@@ -136,20 +136,59 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             var glyphs = drawing as GlyphRunDrawing;
 
+            if (idx >= glyphMetrics.Count)
+                return;
+
             if (glyphs != null)
             {
                 var glyphRun = glyphs.GlyphRun;
                 var glyphCount = glyphRun.AdvanceWidths.Count;
+                var charCount = glyphRun.ClusterMap.Count;
 
-                for (int g = 0; g < glyphCount; ++g)
+                for (int g = 0; g < charCount; ++g)
                 {
-                    if (idx < glyphMetrics.Count)
+                    if ( (g > 0) && (glyphRun.ClusterMap[g] == glyphRun.ClusterMap[g-1]) )
+                    {
+                        // Current character shares its glyph with the previous character (ligature)
+
+                    #if false
+                        // Recompute box of previous glyph
+                        var i = glyphRun.GlyphIndices[glyphRun.ClusterMap[g-1]];
+
+                        var rectX = (float)(glyphRun.GlyphTypeface.LeftSideBearings[i] * glyphRun.FontRenderingEmSize);
+                        var rectY = (float)(glyphRun.GlyphTypeface.BottomSideBearings[i] * glyphRun.FontRenderingEmSize);
+                        var rectW = (float)((glyphRun.GlyphTypeface.AdvanceWidths[i] - glyphRun.GlyphTypeface.LeftSideBearings[i] - glyphRun.GlyphTypeface.RightSideBearings[i]) * glyphRun.FontRenderingEmSize);
+                        var rectH = (float)((glyphRun.GlyphTypeface.AdvanceHeights[i] - glyphRun.GlyphTypeface.TopSideBearings[i] - glyphRun.GlyphTypeface.BottomSideBearings[i]) * glyphRun.FontRenderingEmSize);
+
+                        var leftBearing = -(float)(rectX);
+                        var rightBearing = 0.0f;
+
+                        var glyphX = px2mm(rectX, dpiX);
+                        var glyphY = px2mm(rectY, dpiY);
+                        var glyphW = px2mm(rectW, dpiX);
+                        var glyphH = px2mm(rectH, dpiY);
+                        var glyphRect = new Rectangle(glyphX, glyphY, glyphW, glyphH);
+                        var glyphLeftBearing = px2mm(leftBearing, dpiX);
+                        var glyphRightBearing = px2mm(rightBearing, dpiX);
+
+                        x -= (float)glyphRun.AdvanceWidths[glyphRun.ClusterMap[g-1]];
+                        glyphMetrics[idx-1] = new GlyphMetrics(glyphRect, glyphLeftBearing, glyphRightBearing);
+                        glyphMetrics[idx-1].BoundingBox.Y -= px2mm(baseline, dpiY);
+                        glyphMetrics[idx-1].BoundingBox.X += px2mm(x, dpiX);
+                        x += (float)glyphRun.AdvanceWidths[glyphRun.ClusterMap[g-1]];
+                    #endif
+
+                        // => Use previous box for current character
+                        glyphMetrics[idx] = glyphMetrics[idx-1];
+
+                    }
+                    else
                     {
                         glyphMetrics[idx].BoundingBox.Y -= px2mm(baseline, dpiY);
                         glyphMetrics[idx].BoundingBox.X += px2mm(x, dpiX);
+                        x += (float)glyphRun.AdvanceWidths[glyphRun.ClusterMap[g]];
                     }
 
-                    x += (float)glyphRun.AdvanceWidths[g];
                     ++idx;
                 }
             }
