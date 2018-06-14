@@ -34,7 +34,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void ViewTransformChanged(Renderer renderer)
         {
-            if (_ucEditor.smartGuide != null)
+            if (_ucEditor.SmartGuideEnabled && _ucEditor.smartGuide != null)
             {
                 var dispatcher = _ucEditor.Dispatcher;
                 dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnTransformChanged(); }));
@@ -53,7 +53,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void PartChanged(Editor editor)
         {
-            if (_ucEditor.smartGuide != null)
+            if (_ucEditor.SmartGuideEnabled && _ucEditor.smartGuide != null)
             {
                 var dispatcher = _ucEditor.Dispatcher;
                 dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnPartChanged(); }));
@@ -62,7 +62,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void ContentChanged(Editor editor, string[] blockIds)
         {
-            if (_ucEditor.smartGuide != null)
+            if (_ucEditor.SmartGuideEnabled && _ucEditor.smartGuide != null)
             {
                 var dispatcher = _ucEditor.Dispatcher;
                 dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnContentChanged(blockIds); }));
@@ -71,7 +71,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void SelectionChanged(Editor editor, string[] blockIds)
         {
-            if (_ucEditor.smartGuide != null)
+            if (_ucEditor.SmartGuideEnabled && _ucEditor.smartGuide != null)
             {
                 var dispatcher = _ucEditor.Dispatcher;
                 dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnSelectionChanged(blockIds); }));
@@ -80,7 +80,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void ActiveBlockChanged(Editor editor, string blockId)
         {
-            if (_ucEditor.smartGuide != null)
+            if (_ucEditor.SmartGuideEnabled && _ucEditor.smartGuide != null)
             {
                 var dispatcher = _ucEditor.Dispatcher;
                 dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnActiveBlockChanged(blockId); }));
@@ -103,6 +103,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         private Editor _editor;
         private Renderer _renderer;
         private ImageLoader _loader;
+        private bool _smartGuideEnabled = true;
 
         public Engine Engine
         {
@@ -146,6 +147,19 @@ namespace MyScript.IInk.UIReferenceImplementation
             get
             {
                 return smartGuide;
+            }
+        }
+
+        public bool SmartGuideEnabled
+        {
+            get
+            {
+                return _smartGuideEnabled;
+            }
+
+            set
+            {
+                EnableSmartGuide(value);
             }
         }
 
@@ -240,6 +254,17 @@ namespace MyScript.IInk.UIReferenceImplementation
                 if ((layers & LayerType.CAPTURE) != 0)
                     captureLayer.Update();
             }
+        }
+
+        private void EnableSmartGuide(bool enable)
+        {
+            if (_smartGuideEnabled == enable)
+                return;
+
+            _smartGuideEnabled = enable;
+
+            if (!_smartGuideEnabled && smartGuide != null)
+                smartGuide.Visibility = Visibility.Hidden;
         }
 
         private System.Windows.Point GetPosition(InputEventArgs e)

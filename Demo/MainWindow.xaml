@@ -110,6 +110,12 @@
                         <ComboBoxItem Selected="SaveAs_Click">
                             <TextBlock Text="Save as" />
                         </ComboBoxItem>
+                        <Separator />
+                        <ComboBoxItem>
+                            <CheckBox VerticalContentAlignment="Center" IsChecked="true" Checked="SmartGuideEnabled_Click" Unchecked="SmartGuideEnabled_Click">
+                                Smart Guide
+                            </CheckBox>
+                        </ComboBoxItem>
                     </ComboBox>
                 </Grid>
 

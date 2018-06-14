@@ -787,6 +787,12 @@ namespace MyScript.IInk.Demo
             var box = sender as ComboBox;
             box.SelectedIndex = -1;
         }
+
+        private void SmartGuideEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = sender as CheckBox;
+            UcEditor.SmartGuideEnabled = (bool)checkBox.IsChecked;
+        }
     }
 }
 
