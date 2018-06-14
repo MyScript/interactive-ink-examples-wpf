@@ -29,7 +29,8 @@ namespace MyScript.IInk.GetStarted
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            _editor.Part = null;
+            if (_editor != null)
+                _editor.Part = null;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
