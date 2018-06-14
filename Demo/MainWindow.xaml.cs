@@ -324,22 +324,29 @@ namespace MyScript.IInk.Demo
         private void ShowContextMenu()
         {
             var contentBlock = _lastSelectedBlock;
+
             var supportedTypes = _editor.SupportedAddBlockTypes;
             var supportedExports = _editor.GetSupportedExportMimeTypes(contentBlock);
-            var supportedImport = _editor.GetSupportedImportMimeTypes(contentBlock);
+            var supportedImports = _editor.GetSupportedImportMimeTypes(contentBlock);
+            var supportedStates = _editor.GetSupportedTargetConversionStates(contentBlock);
+
+            var hasTypes = (supportedTypes != null) && supportedTypes.Any();
+            var hasExports = (supportedExports != null) && supportedExports.Any();
+            var hasImports = (supportedImports != null) && supportedImports.Any();
+            var hasStates = (supportedStates != null) && supportedStates.Any();
 
             var isContainer = contentBlock.Type == "Container";
             var isRoot = contentBlock.Id == _editor.GetRootBlock().Id;
 
-            var displayConvert  = !isContainer && !_editor.IsEmpty(contentBlock);
-            var displayAddBlock = supportedTypes != null && supportedTypes.Any() && isContainer;
-            var displayAddImage = false; //supportedTypes != null && supportedTypes.Any() && isContainer;
+            var displayConvert  = hasStates && !isContainer && !_editor.IsEmpty(contentBlock);
+            var displayAddBlock = hasTypes && isContainer;
+            var displayAddImage = false; // hasTypes && isContainer;
             var displayRemove   = !isRoot && !isContainer;
             var displayCopy     = !isRoot && !isContainer;
-            var displayPaste    = supportedTypes != null && supportedTypes.Any() && isContainer;
-            var displayImport   = supportedImport != null && supportedImport.Any();
-            var displayExport   = supportedExports != null && supportedExports.Any();
-            var displayOfficeClipboard = (supportedExports != null) && supportedExports.Contains(MimeType.OFFICE_CLIPBOARD);
+            var displayPaste    = hasTypes && isContainer;
+            var displayImport   = hasImports;
+            var displayExport   = hasExports;
+            var displayOfficeClipboard = hasExports && supportedExports.Contains(MimeType.OFFICE_CLIPBOARD);
 
             var contextMenu = new ContextMenu();
 

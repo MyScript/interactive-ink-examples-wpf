@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using MyScript.IInk.UIReferenceImplementation;
@@ -82,7 +83,17 @@ namespace MyScript.IInk.GetStarted
 
         private void EditConvert_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            _editor.Convert(null, _editor.GetSupportedTargetConversionStates(null)[0]);
+            try
+            {
+                var supportedStates = _editor.GetSupportedTargetConversionStates(null);
+
+                if ( (supportedStates != null) && (supportedStates.Count() > 0) )
+                  _editor.Convert(null, supportedStates[0]);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public void NewFile()
