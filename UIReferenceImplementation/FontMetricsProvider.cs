@@ -143,14 +143,14 @@ namespace MyScript.IInk.UIReferenceImplementation
             {
                 var glyphRun = glyphs.GlyphRun;
                 var glyphCount = glyphRun.AdvanceWidths.Count;
-                var charCount = glyphRun.ClusterMap.Count;
+                var charCount = glyphRun.ClusterMap != null ? glyphRun.ClusterMap.Count : glyphCount;
 
                 for (int g = 0; g < charCount; ++g)
                 {
                     if (idx >= glyphMetrics.Count)
                         break;
 
-                    if ( (g > 0) && (glyphRun.ClusterMap[g] == glyphRun.ClusterMap[g-1]) )
+                    if ( (g > 0) && glyphRun.ClusterMap != null && (glyphRun.ClusterMap[g] == glyphRun.ClusterMap[g-1]) )
                     {
                         // Current character shares its glyph with the previous character (ligature)
 
@@ -189,7 +189,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                     {
                         glyphMetrics[idx].BoundingBox.Y -= px2mm(baseline, dpiY);
                         glyphMetrics[idx].BoundingBox.X += px2mm(x, dpiX);
-                        x += (float)glyphRun.AdvanceWidths[glyphRun.ClusterMap[g]];
+                        x += (float)glyphRun.AdvanceWidths[glyphRun.ClusterMap != null ? glyphRun.ClusterMap[g] : g];
                     }
 
                     ++idx;
