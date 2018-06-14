@@ -347,7 +347,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var width = topRight.X - topLeft.X;
 
                 Width = width;
-                Margin = new Thickness(x, y - ActualHeight, 0, 0);
+                Margin = new Thickness(Math.Floor(x), Math.Floor(y - ActualHeight), 0, 0);
 
                 // Update text
                 Label lastUpdatedItem = null;
