@@ -155,6 +155,10 @@
       <Link>conf\diagram.conf</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\recognition-assets\conf\raw-content.conf">
+      <Link>conf\raw-content.conf</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\recognition-assets\conf\en_US.conf">
       <Link>conf\en_US.conf</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -165,6 +169,10 @@
     </Content>
     <Content Include="..\recognition-assets\resources\analyzer\ank-diagram.res">
       <Link>resources\analyzer\ank-diagram.res</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\recognition-assets\resources\analyzer\ank-raw-content.res">
+      <Link>resources\analyzer\ank-raw-content.res</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="..\recognition-assets\resources\en_US\en_US-ak-cur.res">
@@ -179,8 +187,8 @@
       <Link>resources\math\math-ak.res</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\recognition-assets\resources\math\math-grm-atk.res">
-      <Link>resources\math\math-grm-atk.res</Link>
+    <Content Include="..\recognition-assets\resources\math\math-grm-standard.res">
+      <Link>resources\math\math-grm-standard.res</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="..\recognition-assets\resources\shape\shk-diagram.res">
