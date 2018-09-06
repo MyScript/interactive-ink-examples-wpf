@@ -231,7 +231,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>powershell.exe -NonInteractive -executionpolicy unrestricted -command  "$(SolutionDir)getRecognitionAssets.ps1"</PreBuildEvent>
+    <PreBuildEvent>powershell.exe -NonInteractive -executionpolicy unrestricted -File "$(SolutionDir)getRecognitionAssets.ps1"</PreBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
