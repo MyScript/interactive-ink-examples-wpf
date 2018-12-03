@@ -218,6 +218,11 @@ namespace MyScript.IInk.UIReferenceImplementation
             _engine.Configuration.SetNumber("math.margin.right", horizontalMarginMM);
         }
 
+        public void Closing()
+        {
+            smartGuide?.Closing();
+        }
+
         /// <summary>Retranscribe the size changed event to editor</summary>
         private void Control_SizeChanged(object sender, SizeChangedEventArgs e)
         {

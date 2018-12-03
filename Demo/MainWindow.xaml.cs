@@ -41,7 +41,19 @@ namespace MyScript.IInk.Demo
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (_editor != null)
+            {
+                var part = _editor.Part;
+                var package = part?.Package;
+
                 _editor.Part = null;
+
+                part?.Dispose();
+                package?.Dispose();
+
+                _editor.Dispose();
+            }
+
+            UcEditor?.Closing();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -103,9 +115,16 @@ namespace MyScript.IInk.Demo
                     UcEditor.ResetView(false);
 
                     // Select new part
+                    _lastSelectedBlock?.Dispose();
+                    _lastSelectedBlock = null;
+
+                    _editor.Part = null;
+
                     var newPart = part.Package.GetPart(index - 1);
                     _editor.Part = newPart;
                     Type.Text = _packageName + " - " + newPart.Type;
+
+                    part.Dispose();
                 }
             }
         }
@@ -124,9 +143,16 @@ namespace MyScript.IInk.Demo
                     UcEditor.ResetView(false);
 
                     // Select new part
+                    _lastSelectedBlock?.Dispose();
+                    _lastSelectedBlock = null;
+
+                    _editor.Part = null;
+
                     var newPart = part.Package.GetPart(index + 1);
                     _editor.Part = newPart;
                     Type.Text = _packageName + " - " + newPart.Type;
+
+                    part.Dispose();
                 }
             }
         }
@@ -143,27 +169,46 @@ namespace MyScript.IInk.Demo
         {
             if (newPartType != string.Empty)
             {
-                ContentPackage package;
-
-                if (!newPackage && (_editor.Part != null))
-                {
-                    package = _editor.Part.Package;
-                }
-                else
-                {
-                    string packageName = MakeUntitledFilename();
-                    package = _engine.CreatePackage(packageName);
-                    _packageName = System.IO.Path.GetFileName(packageName);
-                }
-
-                _editor.Part = null;
-
                 // Reset viewing parameters
                 UcEditor.ResetView(false);
 
-                var part = package.CreatePart(newPartType);
-                _editor.Part = part;
-                Type.Text = _packageName + " - " + part.Type;
+                _lastSelectedBlock?.Dispose();
+                _lastSelectedBlock = null;
+
+                if (!newPackage && (_editor.Part != null))
+                {
+                    var package = _editor.Part.Package;
+
+                    _editor.Part.Dispose();
+                    _editor.Part = null;
+
+                    var part = package.CreatePart(newPartType);
+                    _editor.Part = part;
+                    Type.Text = _packageName + " - " + part.Type;
+                }
+                else
+                {
+                    // Close current package
+                    if (_editor.Part != null)
+                    {
+                        var part = _editor.Part;
+                        var package = part?.Package;
+                        _editor.Part = null;
+                        part?.Dispose();
+                        package?.Dispose();
+                    }
+
+                    // Create package and part
+                    {
+                        var packageName = MakeUntitledFilename();
+                        var package = _engine.CreatePackage(packageName);
+                        var part = package.CreatePart(newPartType);
+
+                        _editor.Part = part;
+                        _packageName = System.IO.Path.GetFileName(packageName);
+                        Type.Text = _packageName + " - " + part.Type;
+                    }
+                }
             }
         }
 
@@ -274,13 +319,27 @@ namespace MyScript.IInk.Demo
                 // Reset viewing parameters
                 UcEditor.ResetView(false);
 
+                _lastSelectedBlock?.Dispose();
+                _lastSelectedBlock = null;
+
+                // Close current package
+                if (_editor.Part != null)
+                {
+                    var part = _editor.Part;
+                    var package = part?.Package;
+                    _editor.Part = null;
+                    part?.Dispose();
+                    package?.Dispose();
+                }
+
                 // Open package and select first part
-                _editor.Part = null;
-                var package = _engine.OpenPackage(filePath);
-                var part = package.GetPart(0);
-                _editor.Part = part;
-                _packageName = fileName;
-                Type.Text = _packageName + " - " + part.Type;
+                {
+                    var package = _engine.OpenPackage(filePath);
+                    var part = package.GetPart(0);
+                    _editor.Part = part;
+                    _packageName = fileName;
+                    Type.Text = _packageName + " - " + part.Type;
+                }
             }
         }
 
@@ -327,130 +386,132 @@ namespace MyScript.IInk.Demo
             if (_editor.Part == null)
                 return;
 
-            var contentBlock = _lastSelectedBlock;
-            if (contentBlock == null)
-                return;
-
-            var rootBlock = _editor.GetRootBlock();
-            var isRoot = contentBlock.Id == rootBlock.Id;
-            if (!isRoot && (contentBlock.Type == "Container") )
-                return;
-
-            var onRawContent = part.Type == "Raw Content";
-            var onTextDocument = part.Type == "Text Document";
-
-            var isEmpty = _editor.IsEmpty(contentBlock);
-
-            var supportedTypes = _editor.SupportedAddBlockTypes;
-            var supportedExports = _editor.GetSupportedExportMimeTypes(onRawContent ? rootBlock : contentBlock);
-            var supportedImports = _editor.GetSupportedImportMimeTypes(contentBlock);
-            var supportedStates = _editor.GetSupportedTargetConversionStates(contentBlock);
-
-            var hasTypes = (supportedTypes != null) && supportedTypes.Any();
-            var hasExports = (supportedExports != null) && supportedExports.Any();
-            var hasImports = (supportedImports != null) && supportedImports.Any();
-            var hasStates = (supportedStates != null) && supportedStates.Any();
-
-            var displayConvert  = hasStates && !isEmpty;
-            var displayAddBlock = hasTypes && isRoot;
-            var displayAddImage = false; // hasTypes && isRoot;
-            var displayRemove   = !isRoot;
-            var displayCopy     = (onTextDocument ? !isRoot : !onRawContent);
-            var displayPaste    = hasTypes && isRoot;
-            var displayImport   = hasImports;
-            var displayExport   = hasExports;
-            var displayClipboard = hasExports && supportedExports.Contains(MimeType.OFFICE_CLIPBOARD);
-
-            var contextMenu = new ContextMenu();
-
-            if (displayAddBlock || displayAddImage)
+            using (var rootBlock = _editor.GetRootBlock())
             {
-                MenuItem addItem = new MenuItem { Header = "Add..." };
-                contextMenu.Items.Add(addItem);
+                var contentBlock = _lastSelectedBlock;
+                if (contentBlock == null)
+                    return;
 
-                if (displayAddBlock)
+                var isRoot = contentBlock.Id == rootBlock.Id;
+                if (!isRoot && (contentBlock.Type == "Container") )
+                    return;
+
+                var onRawContent = part.Type == "Raw Content";
+                var onTextDocument = part.Type == "Text Document";
+
+                var isEmpty = _editor.IsEmpty(contentBlock);
+
+                var supportedTypes = _editor.SupportedAddBlockTypes;
+                var supportedExports = _editor.GetSupportedExportMimeTypes(onRawContent ? rootBlock : contentBlock);
+                var supportedImports = _editor.GetSupportedImportMimeTypes(contentBlock);
+                var supportedStates = _editor.GetSupportedTargetConversionStates(contentBlock);
+
+                var hasTypes = (supportedTypes != null) && supportedTypes.Any();
+                var hasExports = (supportedExports != null) && supportedExports.Any();
+                var hasImports = (supportedImports != null) && supportedImports.Any();
+                var hasStates = (supportedStates != null) && supportedStates.Any();
+
+                var displayConvert  = hasStates && !isEmpty;
+                var displayAddBlock = hasTypes && isRoot;
+                var displayAddImage = false; // hasTypes && isRoot;
+                var displayRemove   = !isRoot;
+                var displayCopy     = (onTextDocument ? !isRoot : !onRawContent);
+                var displayPaste    = hasTypes && isRoot;
+                var displayImport   = hasImports;
+                var displayExport   = hasExports;
+                var displayClipboard = hasExports && supportedExports.Contains(MimeType.OFFICE_CLIPBOARD);
+
+                var contextMenu = new ContextMenu();
+
+                if (displayAddBlock || displayAddImage)
                 {
-                    for (int i = 0; i < supportedTypes.Count(); ++i)
+                    MenuItem addItem = new MenuItem { Header = "Add..." };
+                    contextMenu.Items.Add(addItem);
+
+                    if (displayAddBlock)
                     {
-                        MenuItem addBlockItem = new MenuItem { Header = "Add " + supportedTypes[i], Tag = supportedTypes[i] };
-                        addBlockItem.Click += AddBlock;
-                        addItem.Items.Add(addBlockItem);
+                        for (int i = 0; i < supportedTypes.Count(); ++i)
+                        {
+                            MenuItem addBlockItem = new MenuItem { Header = "Add " + supportedTypes[i], Tag = supportedTypes[i] };
+                            addBlockItem.Click += AddBlock;
+                            addItem.Items.Add(addBlockItem);
+                        }
+                    }
+
+                    if (displayAddImage)
+                    {
+                        MenuItem addImageItem = new MenuItem { Header = "Add Image" };
+                        addImageItem.Click += AddImage;
+                        addItem.Items.Add(addImageItem);
                     }
                 }
 
-                if (displayAddImage)
+                if (displayRemove)
                 {
-                    MenuItem addImageItem = new MenuItem { Header = "Add Image" };
-                    addImageItem.Click += AddImage;
-                    addItem.Items.Add(addImageItem);
-                }
-            }
-
-            if (displayRemove)
-            {
-                MenuItem removeItem = new MenuItem { Header = "Remove" };
-                removeItem.Click += Remove;
-                contextMenu.Items.Add(removeItem);
-            }
-
-            if (displayConvert)
-            {
-                MenuItem convertItem = new MenuItem { Header = "Convert" };
-                convertItem.Click += ConvertBlock;
-                contextMenu.Items.Add(convertItem);
-            }
-
-            if (displayCopy || displayClipboard || displayPaste)
-            {
-                MenuItem copyPasteItem = new MenuItem { Header = "Copy/Paste..." };
-                contextMenu.Items.Add(copyPasteItem);
-
-                //if (displayCopy)
-                {
-                    MenuItem copyItem = new MenuItem {  Header = "Copy", IsEnabled = displayCopy };
-                    copyItem.Click += Copy;
-                    copyPasteItem.Items.Add(copyItem);
+                    MenuItem removeItem = new MenuItem { Header = "Remove" };
+                    removeItem.Click += Remove;
+                    contextMenu.Items.Add(removeItem);
                 }
 
-                //if (displayClipboard)
+                if (displayConvert)
                 {
-                    MenuItem clipboardItem = new MenuItem { Header = "Copy To Clipboard (Microsoft Office)", IsEnabled = displayClipboard };
-                    clipboardItem.Click += CopyToClipboard;
-                    copyPasteItem.Items.Add(clipboardItem);
+                    MenuItem convertItem = new MenuItem { Header = "Convert" };
+                    convertItem.Click += ConvertBlock;
+                    contextMenu.Items.Add(convertItem);
                 }
 
-                //if (displayPaste)
+                if (displayCopy || displayClipboard || displayPaste)
                 {
-                    MenuItem pasteItem = new MenuItem { Header = "Paste", IsEnabled = displayPaste };
-                    pasteItem.Click += Paste;
-                    copyPasteItem.Items.Add(pasteItem);
+                    MenuItem copyPasteItem = new MenuItem { Header = "Copy/Paste..." };
+                    contextMenu.Items.Add(copyPasteItem);
+
+                    //if (displayCopy)
+                    {
+                        MenuItem copyItem = new MenuItem {  Header = "Copy", IsEnabled = displayCopy };
+                        copyItem.Click += Copy;
+                        copyPasteItem.Items.Add(copyItem);
+                    }
+
+                    //if (displayClipboard)
+                    {
+                        MenuItem clipboardItem = new MenuItem { Header = "Copy To Clipboard (Microsoft Office)", IsEnabled = displayClipboard };
+                        clipboardItem.Click += CopyToClipboard;
+                        copyPasteItem.Items.Add(clipboardItem);
+                    }
+
+                    //if (displayPaste)
+                    {
+                        MenuItem pasteItem = new MenuItem { Header = "Paste", IsEnabled = displayPaste };
+                        pasteItem.Click += Paste;
+                        copyPasteItem.Items.Add(pasteItem);
+                    }
                 }
-            }
 
-            if (displayImport || displayExport)
-            {
-                MenuItem importExportItem = new MenuItem { Header = "Import/Export..." };
-                contextMenu.Items.Add(importExportItem);
-
-                //if (displayImport)
+                if (displayImport || displayExport)
                 {
-                    MenuItem importItem = new MenuItem { Header = "Import", IsEnabled = displayImport };
-                    importItem.Click += Import;
-                    importExportItem.Items.Add(importItem);
+                    MenuItem importExportItem = new MenuItem { Header = "Import/Export..." };
+                    contextMenu.Items.Add(importExportItem);
+
+                    //if (displayImport)
+                    {
+                        MenuItem importItem = new MenuItem { Header = "Import", IsEnabled = displayImport };
+                        importItem.Click += Import;
+                        importExportItem.Items.Add(importItem);
+                    }
+
+                    //if (displayExport)
+                    {
+                        MenuItem exportItem = new MenuItem { Header = "Export", IsEnabled = displayExport };
+                        exportItem.Click += Export;
+                        importExportItem.Items.Add(exportItem);
+                    }
                 }
 
-                //if (displayExport)
+                if (contextMenu.Items.Count > 0)
                 {
-                    MenuItem exportItem = new MenuItem { Header = "Export", IsEnabled = displayExport };
-                    exportItem.Click += Export;
-                    importExportItem.Items.Add(exportItem);
+                    this.ContextMenu = contextMenu;
+                    this.ContextMenu.IsOpen = true;
                 }
-            }
-
-            if (contextMenu.Items.Count > 0)
-            {
-                this.ContextMenu = contextMenu;
-                this.ContextMenu.IsOpen = true;
             }
         }
 
@@ -459,10 +520,14 @@ namespace MyScript.IInk.Demo
             var pos = e.GetPosition(UcEditor);
 
             _lastPointerPosition = new Graphics.Point((float)pos.X, (float)pos.Y);
+            _lastSelectedBlock?.Dispose();
             _lastSelectedBlock = _editor.HitBlock(_lastPointerPosition.X, _lastPointerPosition.Y);
 
             if ( (_lastSelectedBlock == null) || (_lastSelectedBlock.Type == "Container") )
+            {
+                _lastSelectedBlock?.Dispose();
                 _lastSelectedBlock = _editor.GetRootBlock();
+            }
 
             if (_lastSelectedBlock != null)
             {
@@ -473,7 +538,8 @@ namespace MyScript.IInk.Demo
 
         private void ShowSmartGuideMenu(Point globalPos)
         {
-            _lastSelectedBlock = UcEditor.SmartGuide.ContentBlock;
+            _lastSelectedBlock?.Dispose();
+            _lastSelectedBlock = UcEditor.SmartGuide.ContentBlock?.ShallowCopy();
 
             if (_lastSelectedBlock != null)
                 ShowContextMenu();
@@ -542,7 +608,11 @@ namespace MyScript.IInk.Demo
             try
             {
                 if (_lastSelectedBlock != null)
+                {
                     _editor.RemoveBlock(_lastSelectedBlock);
+                    _lastSelectedBlock.Dispose();
+                    _lastSelectedBlock = null;
+                }
             }
             catch (Exception ex)
             {
@@ -619,85 +689,88 @@ namespace MyScript.IInk.Demo
             if (part == null)
                 return;
 
-            var onRawContent = part.Type == "Raw Content";
-            var contentBlock = onRawContent ? _editor.GetRootBlock() : _lastSelectedBlock;
-
-            if (contentBlock == null)
-                return;
-
-            var mimeTypes = _editor.GetSupportedExportMimeTypes(contentBlock);
-
-            if (mimeTypes == null)
-                return;
-
-            if (mimeTypes.Count() == 0)
-                return;
-
-            string filterList = "";
-
-            for (int i = 0; i < mimeTypes.Count(); ++i)
+            using (var rootBlock = _editor.GetRootBlock())
             {
-                // format filter as "name|extension1;extension2;...;extensionX"
-                var extensions = MimeTypeF.GetFileExtensions(mimeTypes[i]).Split(',');
-                string filter = MimeTypeF.GetName(mimeTypes[i]) + "|";
+                var onRawContent = part.Type == "Raw Content";
+                var contentBlock = onRawContent ? rootBlock : _lastSelectedBlock;
 
-                for (int j = 0; j < extensions.Count(); ++j)
+                if (contentBlock == null)
+                    return;
+
+                var mimeTypes = _editor.GetSupportedExportMimeTypes(contentBlock);
+
+                if (mimeTypes == null)
+                    return;
+
+                if (mimeTypes.Count() == 0)
+                    return;
+
+                string filterList = "";
+
+                for (int i = 0; i < mimeTypes.Count(); ++i)
                 {
-                    if (j > 0)
-                        filter += ";";
-    
-                    filter += "*" + extensions[j];
-                }
+                    // format filter as "name|extension1;extension2;...;extensionX"
+                    var extensions = MimeTypeF.GetFileExtensions(mimeTypes[i]).Split(',');
+                    string filter = MimeTypeF.GetName(mimeTypes[i]) + "|";
 
-                if (i > 0)
-                    filterList += "|";
-
-                filterList += filter;
-            }
-  
-            // Show save dialog
-            {
-                Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-
-                dlg.FileName = "Interactive Ink Document"; // Default file name
-                dlg.DefaultExt = System.String.Empty; // Default file extension
-                dlg.Filter = filterList; // Filter files by extension      
-
-                bool? result = dlg.ShowDialog();
-
-                if ((bool)result)
-                {
-                    var filePath = dlg.FileName;
-                    var filterIndex = dlg.FilterIndex - 1;
-                    var extensions = MimeTypeF.GetFileExtensions(mimeTypes[filterIndex]).Split(',');
-
-                    if (extensions.Count() > 0)
+                    for (int j = 0; j < extensions.Count(); ++j)
                     {
-                        int ext;
+                        if (j > 0)
+                            filter += ";";
+    
+                        filter += "*" + extensions[j];
+                    }
 
-                        for (ext = 0; ext < extensions.Count(); ++ext)
+                    if (i > 0)
+                        filterList += "|";
+
+                    filterList += filter;
+                }
+  
+                // Show save dialog
+                {
+                    Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+
+                    dlg.FileName = "Interactive Ink Document"; // Default file name
+                    dlg.DefaultExt = System.String.Empty; // Default file extension
+                    dlg.Filter = filterList; // Filter files by extension      
+
+                    bool? result = dlg.ShowDialog();
+
+                    if ((bool)result)
+                    {
+                        var filePath = dlg.FileName;
+                        var filterIndex = dlg.FilterIndex - 1;
+                        var extensions = MimeTypeF.GetFileExtensions(mimeTypes[filterIndex]).Split(',');
+
+                        if (extensions.Count() > 0)
                         {
-                            if (filePath.EndsWith(extensions[ext], StringComparison.OrdinalIgnoreCase))
-                                break;
-                        }
+                            int ext;
 
-                        if (ext >= extensions.Count())
-                            filePath += extensions[0];
+                            for (ext = 0; ext < extensions.Count(); ++ext)
+                            {
+                                if (filePath.EndsWith(extensions[ext], StringComparison.OrdinalIgnoreCase))
+                                    break;
+                            }
 
-                        try
-                        {
-                            var drawer = new ImageDrawer();
+                            if (ext >= extensions.Count())
+                                filePath += extensions[0];
 
-                            drawer.ImageLoader = UcEditor.ImageLoader;
+                            try
+                            {
+                                var drawer = new ImageDrawer();
 
-                            _editor.WaitForIdle();
-                            _editor.Export_(contentBlock, filePath, drawer);
+                                drawer.ImageLoader = UcEditor.ImageLoader;
 
-                            System.Diagnostics.Process.Start(filePath);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                _editor.WaitForIdle();
+                                _editor.Export_(contentBlock, filePath, drawer);
+
+                                System.Diagnostics.Process.Start(filePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
                         }
                     }
                 }

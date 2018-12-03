@@ -30,7 +30,19 @@ namespace MyScript.IInk.GetStarted
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (_editor != null)
+            {
+                var part = _editor.Part;
+                var package = part?.Package;
+
                 _editor.Part = null;
+
+                part?.Dispose();
+                package?.Dispose();
+
+                _editor.Dispose();
+            }
+
+            UcEditor?.Closing();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -99,12 +111,24 @@ namespace MyScript.IInk.GetStarted
 
         public void NewFile()
         {
+            // Close current package
+            if (_editor.Part != null)
+            {
+                var part = _editor.Part;
+                var package = part?.Package;
+                _editor.Part = null;
+                part?.Dispose();
+                package?.Dispose();
+            }
+
             // Create package and part
-            string packageName = MakeUntitledFilename();
-            var package = _engine.CreatePackage(packageName);
-            var part = package.CreatePart(PART_TYPE);
-            _editor.Part = part;
-            Type.Text = "Type: " + PART_TYPE;
+            {
+                var packageName = MakeUntitledFilename();
+                var package = _engine.CreatePackage(packageName);
+                var part = package.CreatePart(PART_TYPE);
+                _editor.Part = part;
+                Type.Text = "Type: " + PART_TYPE;
+            }
         }
 
         private string MakeUntitledFilename()
