@@ -34,68 +34,131 @@ namespace MyScript.IInk.UIReferenceImplementation
             return (mmm / 25.4f) * dpi;
         }
 
-        private static void GetGlyphMetrics_(MyScript.IInk.Text.Text text, TextSpan[] spans, List<GlyphMetrics> glyphMetrics, float dpiX, float dpiY)
+        private class FontKey
+        {
+            public FontFamily FontFamily { get; }
+            public float FontSize { get; }
+            public FontWeight FontWeight { get; }
+            public FontStretch FontStretch{ get; }
+            public FontStyle FontStyle { get; }
+
+            public FontKey(FontFamily fontFamily, float fontSize, FontWeight fontWeight, FontStretch fontStretch, FontStyle fontStyle)
+            {
+                this.FontFamily = fontFamily;
+                this.FontSize = fontSize;
+                this.FontWeight = fontWeight;
+                this.FontStretch = fontStretch;
+                this.FontStyle = fontStyle;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj.GetType() != this.GetType())
+                    return false;
+
+                FontKey other = (FontKey)obj;
+                return  (   (this.FontFamily.Equals(other.FontFamily))
+                        &&  (this.FontSize == other.FontSize)
+                        &&  (this.FontWeight == other.FontWeight)
+                        &&  (this.FontStretch == other.FontStretch)
+                        &&  (this.FontStyle == other.FontStyle) );
+            }
+
+            public override int GetHashCode()
+            {
+                return FontFamily.GetHashCode() ^ FontSize.GetHashCode() ^ FontWeight.GetHashCode() ^ FontStretch.GetHashCode() ^ FontStyle.GetHashCode();
+            }
+        }
+        private Dictionary<FontKey, Dictionary<string, GlyphMetrics>> cache = new Dictionary<FontKey, Dictionary<string, GlyphMetrics>>();
+
+        private FontKey FontKeyFromStyle(MyScript.IInk.Graphics.Style style)
+        {
+            var fontFamily = new FontFamily(style.FontFamily);
+            var fontSize = mm2px(style.FontSize, dpiY);
+            var fontWeight = FontWeight.FromOpenTypeWeight(style.FontWeight);
+            var fontStretch = FontStretches.Normal;
+            var fontStyle = FontStyles.Normal;
+
+            if (style.FontStyle.Equals("italic"))
+                fontStyle =  FontStyles.Italic;
+            else if (style.FontStyle.Equals("oblique"))
+                fontStyle =  FontStyles.Oblique;
+
+            if (style.FontWeight >= 700)
+                fontWeight = FontWeights.Bold;
+            else if (style.FontWeight >= 400)
+                fontWeight = FontWeights.Normal;
+            else
+                fontWeight = FontWeights.Light;
+
+            return new FontKey(fontFamily, fontSize, fontWeight, fontStretch, fontStyle);
+        }
+
+        private GlyphMetrics GetGlyphMetrics(FontKey fontKey, string glyphLabel)
+        {
+            Dictionary<string, GlyphMetrics> fontCache = null;
+            if (!cache.TryGetValue(fontKey, out fontCache))
+            {
+                fontCache = new Dictionary<string, GlyphMetrics>();
+                cache[fontKey] = fontCache;
+            }
+
+            GlyphMetrics value = null;
+            if (!fontCache.TryGetValue(glyphLabel, out value))
+            {
+                var typeFace = new Typeface(fontKey.FontFamily, fontKey.FontStyle, fontKey.FontWeight, fontKey.FontStretch);
+                var formattedChar = new FormattedText
+                                    (
+                                        glyphLabel, System.Globalization.CultureInfo.CurrentCulture,
+                                        FlowDirection.LeftToRight, typeFace, fontKey.FontSize, Brushes.Black
+                                    );
+
+                formattedChar.TextAlignment = TextAlignment.Left;
+
+                var geometry = formattedChar.BuildGeometry(new System.Windows.Point(0.0f, 0.0f));
+                var rect = geometry.Bounds;
+
+                // For glyph without geometry (space)
+                if (rect.IsEmpty)
+                    rect = new Rect(0.0, 0.0, formattedChar.Width, formattedChar.Height);
+                         
+                var rectX = (float)rect.X;
+                var rectY = (float)rect.Y;
+                var rectW = (float)rect.Width;
+                var rectH = (float)rect.Height;
+
+                var leftBearing = -(float)(rect.X);
+                var rightBearing = 0.0f;
+
+                var glyphX = px2mm(rectX, dpiX);
+                var glyphY = px2mm(rectY, dpiY);
+                var glyphW = px2mm(rectW, dpiX);
+                var glyphH = px2mm(rectH, dpiY);
+                var glyphRect = new Rectangle(glyphX, glyphY, glyphW, glyphH);
+                var glyphLeftBearing = px2mm(leftBearing, dpiX);
+                var glyphRightBearing = px2mm(rightBearing, dpiX);
+
+                value = new GlyphMetrics(glyphRect, glyphLeftBearing, glyphRightBearing);
+                fontCache[glyphLabel] = value;
+            }
+
+            return new GlyphMetrics(new Rectangle(value.BoundingBox.X, value.BoundingBox.Y, value.BoundingBox.Width, value.BoundingBox.Height), value.LeftSideBearing, value.RightSideBearing);
+        }
+
+        private void GetGlyphMetrics(MyScript.IInk.Text.Text text, TextSpan[] spans, List<GlyphMetrics> glyphMetrics)
         {
             // Process glyph one by one to generate one box per glyph
             for (int s = 0; s < spans.Length; ++s)
             {
                 var textSpan = spans[s];
-                var fontFamily = new FontFamily(textSpan.Style.FontFamily);
-                var fontSize = mm2px(textSpan.Style.FontSize, dpiY);
-                var fontWeight = FontWeight.FromOpenTypeWeight(textSpan.Style.FontWeight);
-                var fontStretch = FontStretches.Normal;
-                var fontStyle = FontStyles.Normal;
-
-                if (textSpan.Style.FontStyle.Equals("italic"))
-                    fontStyle =  FontStyles.Italic;
-                else if (textSpan.Style.FontStyle.Equals("oblique"))
-                    fontStyle =  FontStyles.Oblique;
-
-                if (textSpan.Style.FontWeight >= 700)
-                    fontWeight = FontWeights.Bold;
-                else if (textSpan.Style.FontWeight >= 400)
-                    fontWeight = FontWeights.Normal;
-                else
-                    fontWeight = FontWeights.Light;
-
-                var typeFace = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
+                var fontKey = FontKeyFromStyle(textSpan.Style);
 
                 for (int j = textSpan.BeginPosition; j < textSpan.EndPosition; ++j)
                 {
                     var glyphLabel = text.GetGlyphLabelAt(j);
+                    var glyphMetrics_ = GetGlyphMetrics(fontKey, glyphLabel);
 
-                    var formattedChar = new FormattedText
-                                        (
-                                            glyphLabel, System.Globalization.CultureInfo.CurrentCulture,
-                                            FlowDirection.LeftToRight, typeFace, fontSize, Brushes.Black
-                                        );
-
-                    formattedChar.TextAlignment = TextAlignment.Left;
-
-                    var geometry = formattedChar.BuildGeometry(new System.Windows.Point(0.0f, 0.0f));
-                    var rect = geometry.Bounds;
-
-                    // For glyph without geometry (space)
-                    if (rect.IsEmpty)
-                        rect = new Rect(0.0, 0.0, formattedChar.Width, formattedChar.Height);
-                         
-                    var rectX = (float)rect.X;
-                    var rectY = (float)rect.Y;
-                    var rectW = (float)rect.Width;
-                    var rectH = (float)rect.Height;
-
-                    var leftBearing = -(float)(rect.X);
-                    var rightBearing = 0.0f;
-
-                    var glyphX = px2mm(rectX, dpiX);
-                    var glyphY = px2mm(rectY, dpiY);
-                    var glyphW = px2mm(rectW, dpiX);
-                    var glyphH = px2mm(rectH, dpiY);
-                    var glyphRect = new Rectangle(glyphX, glyphY, glyphW, glyphH);
-                    var glyphLeftBearing = px2mm(leftBearing, dpiX);
-                    var glyphRightBearing = px2mm(rightBearing, dpiX);
-
-                    glyphMetrics.Add(new GlyphMetrics(glyphRect, glyphLeftBearing, glyphRightBearing));
+                    glyphMetrics.Add(glyphMetrics_);
                 }
             }
 
@@ -103,35 +166,16 @@ namespace MyScript.IInk.UIReferenceImplementation
                 return;
 
             // Draw text to get data for glyphs
-            float baseline = 0.0f;
             FormattedText formattedText;
-
             {
                 var firstStyle = spans[0].Style;
-                var firstFontFamily = new FontFamily(firstStyle.FontFamily);
-                var firstFontSize = mm2px(firstStyle.FontSize, dpiY);
-                var firstFontWeight = FontWeight.FromOpenTypeWeight(firstStyle.FontWeight);
-                var firstFontStretch = FontStretches.Normal;
-                var firstFontStyle = FontStyles.Normal;
-
-                if (firstStyle.FontStyle.Equals("italic"))
-                    firstFontStyle =  FontStyles.Italic;
-                else if (firstStyle.FontStyle.Equals("oblique"))
-                    firstFontStyle =  FontStyles.Oblique;
-
-                if (firstStyle.FontWeight >= 700)
-                    firstFontWeight = FontWeights.Bold;
-                else if (firstStyle.FontWeight >= 400)
-                    firstFontWeight = FontWeights.Normal;
-                else
-                    firstFontWeight = FontWeights.Light;
-
-                var firstFontTypeFace = new Typeface(firstFontFamily, firstFontStyle, firstFontWeight, firstFontStretch);
+                var firstFontKey = FontKeyFromStyle(firstStyle);
+                var firstFontTypeFace = new Typeface(firstFontKey.FontFamily, firstFontKey.FontStyle, firstFontKey.FontWeight, firstFontKey.FontStretch);
 
                 formattedText = new FormattedText
                                     (
                                         text.Label, System.Globalization.CultureInfo.CurrentCulture,
-                                        FlowDirection.LeftToRight, firstFontTypeFace, firstFontSize,
+                                        FlowDirection.LeftToRight, firstFontTypeFace, firstFontKey.FontSize,
                                         Brushes.Black
                                     );
 
@@ -142,36 +186,16 @@ namespace MyScript.IInk.UIReferenceImplementation
                     var textSpan = spans[s];
                     var charIndex = textSpan.BeginPosition;
                     var charCount = textSpan.EndPosition - textSpan.BeginPosition;
+                    var fontKey = FontKeyFromStyle(textSpan.Style);
+                    var fontTypeFace = new Typeface(fontKey.FontFamily, fontKey.FontStyle, fontKey.FontWeight, fontKey.FontStretch);
 
-                    var fontFamily = new FontFamily(textSpan.Style.FontFamily);
-                    var fontSize = mm2px(textSpan.Style.FontSize, dpiY);
-                    var fontWeight = FontWeight.FromOpenTypeWeight(textSpan.Style.FontWeight);
-                    var fontStretch = FontStretches.Normal;
-                    var fontStyle = FontStyles.Normal;
-
-                    if (textSpan.Style.FontStyle.Equals("italic"))
-                        fontStyle =  FontStyles.Italic;
-                    else if (textSpan.Style.FontStyle.Equals("oblique"))
-                        fontStyle =  FontStyles.Oblique;
-
-                    if (textSpan.Style.FontWeight >= 700)
-                        fontWeight = FontWeights.Bold;
-                    else if (textSpan.Style.FontWeight >= 400)
-                        fontWeight = FontWeights.Normal;
-                    else
-                        fontWeight = FontWeights.Light;
-
-                    var fontTypeFace = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
-
-                    formattedText.SetFontFamily(fontFamily, charIndex, charCount);
-                    formattedText.SetFontSize(fontSize, charIndex, charCount);
-                    formattedText.SetFontWeight(fontWeight, charIndex, charCount);
-                    formattedText.SetFontStretch(fontStretch, charIndex, charCount);
-                    formattedText.SetFontStyle(fontStyle, charIndex, charCount);
+                    formattedText.SetFontFamily(fontKey.FontFamily, charIndex, charCount);
+                    formattedText.SetFontSize(fontKey.FontSize, charIndex, charCount);
+                    formattedText.SetFontWeight(fontKey.FontWeight, charIndex, charCount);
+                    formattedText.SetFontStretch(fontKey.FontStretch, charIndex, charCount);
+                    formattedText.SetFontStyle(fontKey.FontStyle, charIndex, charCount);
                     formattedText.SetFontTypeface(fontTypeFace, charIndex, charCount);
                 }
-
-                baseline = (float)formattedText.Baseline;
             }
 
             var drawing = new DrawingGroup();
@@ -182,10 +206,11 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
 
             // Apply baseline and offsets of glyphs to bounding boxes
-            WalkDrawingForText(drawing, glyphMetrics, baseline, dpiX, dpiY);
+            float baseline = (float)formattedText.Baseline;
+            WalkDrawingForText(drawing, glyphMetrics, baseline);
         }
 
-        private static void WalkDrawingForText_(Drawing drawing, List<GlyphMetrics> glyphMetrics, ref int idx, ref float x, float baseline, float dpiX, float dpiY)
+        private static void WalkDrawingForText(Drawing drawing, List<GlyphMetrics> glyphMetrics, ref int idx, ref float x, float baseline, float dpiX, float dpiY)
         {
             // Parse the Drawing tree recursively depending on the real type of each node
             // - node is a DrawingGroup, parse the children
@@ -260,16 +285,16 @@ namespace MyScript.IInk.UIReferenceImplementation
                 if (group != null)
                 {
                     foreach (var child in group.Children)
-                        WalkDrawingForText_(child, glyphMetrics, ref idx, ref x, baseline, dpiX, dpiY);
+                        WalkDrawingForText(child, glyphMetrics, ref idx, ref x, baseline, dpiX, dpiY);
                 }
             }
         }
 
-        private static void WalkDrawingForText(Drawing drawing, List<GlyphMetrics> glyphMetrics, float baseline, float dpiX, float dpiY)
+        private void WalkDrawingForText(Drawing drawing, List<GlyphMetrics> glyphMetrics, float baseline)
         {
             int glyphIdx = 0;
             float glyphX = 0.0f;
-            WalkDrawingForText_(drawing, glyphMetrics, ref glyphIdx, ref glyphX, baseline, dpiX, dpiY);
+            WalkDrawingForText(drawing, glyphMetrics, ref glyphIdx, ref glyphX, baseline, dpiX, dpiY);
         }
 
         public Rectangle[] GetCharacterBoundingBoxes(MyScript.IInk.Text.Text text, TextSpan[] spans)
@@ -277,7 +302,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             var glyphMetrics = new List<GlyphMetrics>();
             var rectangles = new List<Rectangle>();
 
-            GetGlyphMetrics_(text, spans, glyphMetrics, dpiX, dpiY);
+            GetGlyphMetrics(text, spans, glyphMetrics);
 
             foreach (var metrics in glyphMetrics)
                 rectangles.Add(metrics.BoundingBox);
@@ -298,7 +323,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         public GlyphMetrics[] GetGlyphMetrics(MyScript.IInk.Text.Text text, TextSpan[] spans)
         {
             var glyphMetrics = new List<GlyphMetrics>();
-            GetGlyphMetrics_(text, spans, glyphMetrics, dpiX, dpiY);
+            GetGlyphMetrics(text, spans, glyphMetrics);
             return glyphMetrics.ToArray();
         }
     }
