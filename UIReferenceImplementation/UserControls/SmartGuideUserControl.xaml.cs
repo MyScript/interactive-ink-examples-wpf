@@ -386,7 +386,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                 Margin = new Thickness(Math.Floor(x), Math.Floor(y - ActualHeight), 0, 0);
 
                 Label lastUpdatedItem = null;
-                if (cause == UpdateCause.Edit)
+                if ( (cause == UpdateCause.Edit) || (cause == UpdateCause.Selection) )
                 {
                     // Update text
                     textItem.Children.Clear();
