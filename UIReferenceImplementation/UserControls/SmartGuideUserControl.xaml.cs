@@ -362,9 +362,10 @@ namespace MyScript.IInk.UIReferenceImplementation
                 Width = width;
                 Margin = new Thickness(Math.Floor(x), Math.Floor(y - ActualHeight), 0, 0);
 
-                // Update text
                 Label lastUpdatedItem = null;
+                if (cause == UpdateCause.Edit)
                 {
+                    // Update text
                     textItem.Children.Clear();
 
                     foreach (var word in _currentWords)
