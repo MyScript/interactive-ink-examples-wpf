@@ -191,7 +191,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             temporaryLayer.Renderer = _renderer;
 
             _editor = _engine.CreateEditor(Renderer);
-            _editor.SetViewSize((int)ActualWidth, (int)ActualHeight);
+            _editor.SetViewSize((int)Math.Round(captureLayer.ActualWidth), (int)Math.Round(captureLayer.ActualHeight));
             _editor.SetFontMetricsProvider(new FontMetricsProvider(dpiX, dpiY));
             _editor.AddListener(new EditorListener(this));
 
