@@ -9,7 +9,7 @@ The repository content targets WPF platform.
 ## Getting started
 
 ### Prerequisites
-This getting started section has been tested with Visual Studio 2015 and Visual Studio 2017.
+This getting started section has been tested with Visual Studio 2017.
 
 ### Installation
 
@@ -19,7 +19,7 @@ This getting started section has been tested with Visual Studio 2015 and Visual 
 
 3. Copy this certificate to `GetStarted\MyCertificate.cs` and `Demo\MyCertificate.cs`
 
-4. Open either `MyScript.InteractiveInk.Examples.Wpf-VS2015.sln` or `MyScript.InteractiveInk.Examples.Wpf-VS2017.sln` file. `GetStarted` project is the most simple example and is design to help you understand what Interactive Ink is about and how easy it is to integrate it into your application. `Demo` project contains a complete example and helps you build your own integration. You can select which project to launch by right-clicking the project in the solution browser and selecting "Set as startup project".
+4. Open `MyScript.InteractiveInk.Examples.Wpf-VS2017.sln` file. `GetStarted` project is the most simple example and is design to help you understand what Interactive Ink is about and how easy it is to integrate it into your application. `Demo` project contains a complete example and helps you build your own integration. You can select which project to launch by right-clicking the project in the solution browser and selecting "Set as startup project".
 
 ## Building your own integration
 
