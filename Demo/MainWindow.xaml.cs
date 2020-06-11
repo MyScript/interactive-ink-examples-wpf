@@ -36,6 +36,26 @@ namespace MyScript.IInk.Demo
             TypeOfContentDialog.SetParent(TypeOfContentDialogParent);
 
             this.Closing += Window_Closing;
+
+            // Add keyboard shortcuts
+            {
+                var undoCmd = new System.Windows.Input.RoutedCommand();
+                var undoGst = new System.Windows.Input.KeyGesture(  System.Windows.Input.Key.Z,
+                                                                    System.Windows.Input.ModifierKeys.Control);
+
+                var redoCmd = new System.Windows.Input.RoutedCommand();
+                var redoGstZ = new System.Windows.Input.KeyGesture( System.Windows.Input.Key.Z,
+                                                                    System.Windows.Input.ModifierKeys.Control|System.Windows.Input.ModifierKeys.Shift);
+                var redoGstY = new System.Windows.Input.KeyGesture( System.Windows.Input.Key.Y,
+                                                                    System.Windows.Input.ModifierKeys.Control);
+
+                undoCmd.InputGestures.Add(undoGst);
+                redoCmd.InputGestures.Add(redoGstZ);
+                redoCmd.InputGestures.Add(redoGstY);
+
+                CommandBindings.Add(new System.Windows.Input.CommandBinding(undoCmd, (e, s) => { _editor?.Undo(); }));
+                CommandBindings.Add(new System.Windows.Input.CommandBinding(redoCmd, (e, s) => { _editor?.Redo(); }));
+            }
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
