@@ -1,4 +1,4 @@
-﻿// Copyright MyScript. All right reserved.
+// Copyright MyScript. All right reserved.
 
 using MyScript.IInk.Graphics;
 using System;
@@ -367,8 +367,10 @@ namespace MyScript.IInk.UIReferenceImplementation
                 return;
 
             var transform = _transform;
-            var screenMin = transform.Apply(x, y);
-            var screenMax = transform.Apply(x + width, y + height);
+            var tl = transform.Apply(x, y);
+            var br = transform.Apply(x + width, y + height);
+            var screenMin = new Graphics.Point(Math.Min(tl.X, br.X), Math.Min(tl.Y, br.Y));
+            var screenMax = new Graphics.Point(Math.Max(tl.X, br.X), Math.Max(tl.Y, br.Y));
 
             var image = _imageLoader.getImage(  url, mimeType,
                                                 (url_, image_) =>
@@ -394,23 +396,6 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
             else
             {
-                // adjust rectangle so that the image gets fit into original rectangle
-                float fx = width / (float)image.Width;
-                float fy = height / (float)image.Height;
-
-                if (fx > fy)
-                {
-                    float w = (float)(image.Width * fy);
-                    x += (width - w) / 2;
-                    width = w;
-                }
-                else
-                {
-                    float h = (float)(image.Height * fx);
-                    y += (height - h) / 2;
-                    height = h;
-                }
-
                 // draw the image
                 var rect = new Rect(x, y, width, height);
                 var clipped = PushRenderStates();
