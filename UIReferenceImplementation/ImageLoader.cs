@@ -1,47 +1,89 @@
 // Copyright MyScript. All right reserved.
 
 using System;
-using System.Collections.Concurrent;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Collections.Generic;
 
 namespace MyScript.IInk.UIReferenceImplementation
 {
-    public class ImageLoader
+    // LruImgCache
+    public class LruImgCache
     {
-        private Editor _editor;
-        private string _cacheDirectory;
-        private ConcurrentDictionary<string, BitmapSource> _cache;
+        private LinkedList<string> _lru = new LinkedList<string>();
+        private Dictionary<string, ImageNode> _cache = new Dictionary<string, ImageNode>();
+        private int _maxBytes;
+        private int _curBytes;
 
-        public Editor Editor
+        // ImageNode
+        public struct ImageNode
         {
-            get
+            public ImageNode(BitmapSource image, int cost)
             {
-                return _editor;
+                Image = image;
+                Cost = cost;
             }
+
+            public BitmapSource Image { get; }
+            public int Cost { get; }
         }
 
-        public ImageLoader(Editor editor, string cacheDirectory)
+        public LruImgCache(int maxBytes)
         {
-            _editor = editor;
-            _cacheDirectory = System.IO.Path.Combine(cacheDirectory, "tmp/render-cache");
-            _cache = new ConcurrentDictionary<string, BitmapSource>();
+            _maxBytes = maxBytes;
+            _curBytes = 0;
         }
 
-        public BitmapSource getImage(string url, string mimeType)
+        public bool containsBitmap(string url)
         {
-            if (!_cache.ContainsKey(url))
-                _cache[url] = loadImage(url, mimeType);
-            return _cache[url];
+            return _cache.ContainsKey(url);
         }
 
-        private BitmapSource loadImage(string url, string mimeType)
+        public BitmapSource getBitmap(string url)
+        {
+            // Update LRU
+            _lru.Remove(url);
+            _lru.AddFirst(url);
+
+            return _cache[url].Image;
+        }
+
+        public void putBitmap(string url, string mimeType)
+        {
+            BitmapSource image = loadBitmap(url, mimeType);
+            int imageBytes = (int)((image.Format.BitsPerPixel * image.PixelWidth * image.PixelHeight) / 8.0);
+
+            // Too big for cache
+            if (imageBytes > _maxBytes)
+            {
+                // Use fallback (cache it to avoid reloading it each time for size check)
+                image = createFallbackBitmap();
+                imageBytes = 4;
+            }
+
+            // Remove LRUs if max size reached
+            while (_curBytes + imageBytes > _maxBytes)
+            {
+                string lruKey = _lru.Last.Value;
+                ImageNode lruNode = _cache[lruKey];
+                _curBytes -= lruNode.Cost;
+                _cache.Remove(lruKey);
+                _lru.RemoveLast();
+            }
+
+            // Add to cache
+            _cache.Add(url, new ImageNode(image, imageBytes));
+            _curBytes += imageBytes;
+            _lru.AddFirst(url);
+        }
+
+        private BitmapSource loadBitmap(string url, string mimeType)
         {
             if (mimeType.StartsWith("image/"))
             {
                 try
                 {
+                    // Load
                     var path = System.IO.Path.GetFullPath(url);
                     var uri = new Uri(path);
 
@@ -60,12 +102,55 @@ namespace MyScript.IInk.UIReferenceImplementation
                 }
             }
 
-            // Fallback 1x1 bitmap
-            var dpiX = _editor.Renderer.DpiX;
-            var dpiY = _editor.Renderer.DpiY;
-            var image = new RenderTargetBitmap(1, 1, dpiX, dpiY, PixelFormats.Default);
+            // Fallback
+            return createFallbackBitmap();
+        }
 
+        public static BitmapSource createFallbackBitmap()
+        {
+            // Fallback 1x1 bitmap
+            var dpi = 96;
+            var image = new RenderTargetBitmap(1, 1, dpi, dpi, PixelFormats.Default);
             image?.Clear();
+
+            return image;
+        }
+    }
+
+    // ImageLoader
+    public class ImageLoader
+    {
+        private Editor _editor;
+        private LruImgCache _cache;
+        private const int CACHE_MAX_BYTES = 200 * 1000000;  // 200M (in Bytes)
+
+        public Editor Editor
+        {
+            get
+            {
+                return _editor;
+            }
+        }
+
+        public ImageLoader(Editor editor, string cacheDirectory)
+        {
+            _editor = editor;
+            _cache = new LruImgCache(CACHE_MAX_BYTES);
+        }
+
+        public BitmapSource getImage(string url, string mimeType)
+        {
+            BitmapSource image = null;
+
+            lock (_cache)
+            {
+                if (!_cache.containsBitmap(url))
+                    _cache.putBitmap(url, mimeType);
+                image = _cache.getBitmap(url);
+            }
+
+            if (image == null)
+                image = LruImgCache.createFallbackBitmap();
 
             return image;
         }
