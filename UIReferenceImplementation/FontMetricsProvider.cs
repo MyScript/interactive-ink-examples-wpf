@@ -1,4 +1,4 @@
-﻿// Copyright MyScript. All right reserved.
+// Copyright MyScript. All right reserved.
 
 using MyScript.IInk.Text;
 using MyScript.IInk.Graphics;
@@ -22,6 +22,16 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             this.dpiX = dpiX;
             this.dpiY = dpiY;
+        }
+
+        public static string toPlatformFontFamily(string family, string style)
+        {
+            var family_ = family;
+            if (family_ == "sans-serif")
+                family_ = "Segoe UI";
+            else if (family_ == "STIXGeneral" && style == "italic")
+                family_ = "STIX";
+            return family_;
         }
 
         private static float px2mm(float px, float dpi)
@@ -73,7 +83,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         private FontKey FontKeyFromStyle(MyScript.IInk.Graphics.Style style)
         {
-            var fontFamily = new FontFamily(style.FontFamily);
+            var fontFamily = new FontFamily(toPlatformFontFamily(style.FontFamily, style.FontStyle));
             var fontSize = mm2px(style.FontSize, dpiY);
             var fontWeight = FontWeight.FromOpenTypeWeight(style.FontWeight);
             var fontStretch = FontStretches.Normal;

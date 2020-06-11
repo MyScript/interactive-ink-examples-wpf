@@ -166,7 +166,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void SetFontProperties(string family, float lineHeight, float size, string style, string variant, int weight)
         {
-            _fontFamily = new System.Windows.Media.FontFamily(family);
+            _fontFamily = new System.Windows.Media.FontFamily(FontMetricsProvider.toPlatformFontFamily(family, style));
             _fontStyle = FontStyles.Normal;
             _fontStretch = FontStretches.Normal;
 
