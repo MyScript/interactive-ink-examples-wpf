@@ -130,8 +130,8 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                 // For glyph without geometry (space)
                 if (rect.IsEmpty)
-                    rect = new Rect(0.0, 0.0, formattedChar.Width, formattedChar.Height);
-                         
+                    rect = new Rect(0.0, 0.0, formattedChar.WidthIncludingTrailingWhitespace, formattedChar.Height);
+
                 var rectX = (float)rect.X;
                 var rectY = (float)rect.Y;
                 var rectW = (float)rect.Width;
