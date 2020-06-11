@@ -1,4 +1,4 @@
-﻿// Copyright MyScript. All right reserved.
+// Copyright MyScript. All right reserved.
 
 using System;
 using System.Windows;
@@ -27,27 +27,15 @@ namespace MyScript.IInk.UIReferenceImplementation
                 LayerType layerType = LayerType.LayerType_ALL;
                 Canvas canvas = new Canvas(drawingContext, Renderer.RenderTarget, ImageLoader);
 
-                if (this.Name.Equals("backgroundLayer"))
-                    layerType = LayerType.BACKGROUND;
                 if (this.Name.Equals("modelLayer"))
                     layerType = LayerType.MODEL;
                 if (this.Name.Equals("captureLayer"))
                     layerType = LayerType.CAPTURE;
-                if (this.Name.Equals("temporaryLayer"))
-                    layerType = LayerType.TEMPORARY;
 
                 switch (layerType)
                 {
-                    case LayerType.BACKGROUND:
-                        Renderer.DrawBackground(x, y, width, height, canvas);
-                        break;
-
                     case LayerType.MODEL:
                         Renderer.DrawModel(x, y, width, height, canvas);
-                        break;
-
-                    case LayerType.TEMPORARY:
-                        Renderer.DrawTemporaryItems(x, y, width, height, canvas);
                         break;
 
                     case LayerType.CAPTURE:

@@ -185,10 +185,8 @@ namespace MyScript.IInk.UIReferenceImplementation
             _renderer = _engine.CreateRenderer(dpiX, dpiY, this);
             _renderer.AddListener(new RendererListener(this));
 
-            backgroundLayer.Renderer = _renderer;
             modelLayer.Renderer = _renderer;
             captureLayer.Renderer = _renderer;
-            temporaryLayer.Renderer = _renderer;
 
             _editor = _engine.CreateEditor(Renderer);
             _editor.SetViewSize((int)Math.Round(captureLayer.ActualWidth), (int)Math.Round(captureLayer.ActualHeight));
@@ -200,10 +198,8 @@ namespace MyScript.IInk.UIReferenceImplementation
             var tempFolder = _engine.Configuration.GetString("content-package.temp-folder");
             _loader = new ImageLoader(_editor, tempFolder);
 
-            backgroundLayer.ImageLoader = _loader;
             modelLayer.ImageLoader = _loader;
             captureLayer.ImageLoader = _loader;
-            temporaryLayer.ImageLoader = _loader;
 
             float verticalMarginPX = 60;
             float horizontalMarginPX = 40;
@@ -235,12 +231,8 @@ namespace MyScript.IInk.UIReferenceImplementation
         /// <summary>Force inks layer to be redrawn</summary>
         public void Invalidate(Renderer renderer, LayerType layers)
         {
-            if ((layers & LayerType.BACKGROUND) != 0)
-                backgroundLayer.Update();
             if ((layers & LayerType.MODEL) != 0)
                 modelLayer.Update();
-            if ((layers & LayerType.TEMPORARY) != 0)
-                temporaryLayer.Update();
             if ((layers & LayerType.CAPTURE) != 0)
                 captureLayer.Update();
         }
@@ -250,12 +242,8 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             if (height >= 0)
             {
-                if ((layers & LayerType.BACKGROUND) != 0)
-                    backgroundLayer.Update();
                 if ((layers & LayerType.MODEL) != 0)
                     modelLayer.Update();
-                if ((layers & LayerType.TEMPORARY) != 0)
-                    temporaryLayer.Update();
                 if ((layers & LayerType.CAPTURE) != 0)
                     captureLayer.Update();
             }

@@ -1,4 +1,4 @@
-﻿// Copyright MyScript. All right reserved.
+// Copyright MyScript. All right reserved.
 
 using System;
 using System.Linq;
@@ -96,14 +96,8 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                     canvas.Clear(0, 0, _image.PixelWidth, _image.PixelHeight, color);
 
-                    if (layers.HasFlag(LayerType.BACKGROUND))
-                        renderer.DrawBackground(x, y, width, height, canvas);
-
                     if (layers.HasFlag(LayerType.MODEL))
                         renderer.DrawModel(x, y, width, height, canvas);
-
-                    if (layers.HasFlag(LayerType.TEMPORARY))
-                        renderer.DrawTemporaryItems(x, y, width, height, canvas);
 
                     if (layers.HasFlag(LayerType.CAPTURE))
                         renderer.DrawCaptureStrokes(x, y, width, height, canvas);
