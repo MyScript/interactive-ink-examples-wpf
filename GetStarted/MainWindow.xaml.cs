@@ -1,4 +1,4 @@
-﻿// Copyright MyScript. All right reserved.
+// Copyright MyScript. All right reserved.
 
 using System;
 using System.ComponentModel;
@@ -15,7 +15,7 @@ namespace MyScript.IInk.GetStarted
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Defines the type of content (possible values are: "Text Document", "Text", "Diagram", "Math", and "Drawing")
+        // Defines the type of content (possible values are: "Text Document", "Text", "Diagram", "Math", "Drawing" and "Raw Content")
         private const string PART_TYPE = "Text Document";
 
         private Engine _engine;
