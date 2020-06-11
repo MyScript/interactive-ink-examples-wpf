@@ -64,6 +64,7 @@ namespace MyScript.IInk.Demo
             {
                 var part = _editor.Part;
                 var package = part?.Package;
+                package?.Save();
 
                 _editor.Part = null;
 
@@ -213,6 +214,7 @@ namespace MyScript.IInk.Demo
                     {
                         var part = _editor.Part;
                         var package = part?.Package;
+                        package?.Save();
                         _editor.Part = null;
                         part?.Dispose();
                         package?.Dispose();
@@ -347,6 +349,7 @@ namespace MyScript.IInk.Demo
                 {
                     var part = _editor.Part;
                     var package = part?.Package;
+                    package?.Save();
                     _editor.Part = null;
                     part?.Dispose();
                     package?.Dispose();
@@ -388,16 +391,20 @@ namespace MyScript.IInk.Demo
         private string MakeUntitledFilename()
         {
             var localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string name;
+            var tempFolder = _engine.Configuration.GetString("content-package.temp-folder");
+            string fileName;
+            string folderName;
 
             do
             {
                 string baseName = "File" + (++_filenameIndex) + ".iink";
-                name = System.IO.Path.Combine(localFolder, "MyScript", baseName);
+                fileName = System.IO.Path.Combine(localFolder, "MyScript", baseName);
+                var tempName = baseName + "-file";
+                folderName = System.IO.Path.Combine(tempFolder, tempName);
             }
-            while (System.IO.File.Exists(name));
+            while (System.IO.File.Exists(fileName) || System.IO.File.Exists(folderName));
 
-            return name;
+            return fileName;
         }
 
         private void ShowContextMenu()
