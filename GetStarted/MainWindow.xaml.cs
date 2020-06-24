@@ -109,25 +109,34 @@ namespace MyScript.IInk.GetStarted
             }
         }
 
+        private void ClosePackage()
+        {
+            var part = _editor.Part;
+            var package = part?.Package;
+            _editor.Part = null;
+            part?.Dispose();
+            package?.Dispose();
+            Type.Text = "";
+        }
+
         public void NewFile()
         {
-            // Close current package
-            if (_editor.Part != null)
+            try
             {
-                var part = _editor.Part;
-                var package = part?.Package;
-                _editor.Part = null;
-                part?.Dispose();
-                package?.Dispose();
-            }
+                // Close current package
+                ClosePackage();
 
-            // Create package and part
-            {
+                // Create package and part
                 var packageName = MakeUntitledFilename();
                 var package = _engine.CreatePackage(packageName);
                 var part = package.CreatePart(PART_TYPE);
                 _editor.Part = part;
                 Type.Text = "Type: " + PART_TYPE;
+            }
+            catch (Exception ex)
+            {
+                ClosePackage();
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

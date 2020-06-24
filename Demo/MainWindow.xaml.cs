@@ -128,24 +128,46 @@ namespace MyScript.IInk.Demo
 
             if (part != null)
             {
-                var index = part.Package.IndexOfPart(part);
+                var package = part.Package;
+                var index = package.IndexOfPart(part);
 
                 if (index > 0)
                 {
                     // Reset viewing parameters
                     UcEditor.ResetView(false);
 
-                    // Select new part
                     _lastSelectedBlock?.Dispose();
                     _lastSelectedBlock = null;
-
                     _editor.Part = null;
 
-                    var newPart = part.Package.GetPart(index - 1);
-                    _editor.Part = newPart;
-                    Type.Text = _packageName + " - " + newPart.Type;
+                    while (--index >= 0)
+                    {
+                        ContentPart newPart = null;
 
-                    part.Dispose();
+                        try
+                        {
+                            // Select new part
+                            newPart = part.Package.GetPart(index);
+                            _editor.Part = newPart;
+                            Type.Text = _packageName + " - " + newPart.Type;
+                            part.Dispose();
+                            break;
+                        }
+                        catch
+                        {
+                            // Can't set this part, try the previous one
+                            _editor.Part = null;
+                            Type.Text = "";
+                            newPart?.Dispose();
+                        }
+                    }
+
+                    if (index < 0)
+                    {
+                        // Restore current part if none can be set
+                        _editor.Part = part;
+                        Type.Text = _packageName + " - " + part.Type;
+                    }
                 }
             }
         }
@@ -156,24 +178,47 @@ namespace MyScript.IInk.Demo
 
             if (part != null)
             {
-                var index = part.Package.IndexOfPart(part);
+                var package = part.Package;
+                var count = package.PartCount;
+                var index = package.IndexOfPart(part);
 
-                if (index < part.Package.PartCount - 1)
+                if (index < count - 1)
                 {
                     // Reset viewing parameters
                     UcEditor.ResetView(false);
 
-                    // Select new part
                     _lastSelectedBlock?.Dispose();
                     _lastSelectedBlock = null;
-
                     _editor.Part = null;
 
-                    var newPart = part.Package.GetPart(index + 1);
-                    _editor.Part = newPart;
-                    Type.Text = _packageName + " - " + newPart.Type;
+                    while (++index < count)
+                    {
+                        ContentPart newPart = null;
 
-                    part.Dispose();
+                        try
+                        {
+                            // Select new part
+                            newPart = part.Package.GetPart(index);
+                            _editor.Part = newPart;
+                            Type.Text = _packageName + " - " + newPart.Type;
+                            part.Dispose();
+                            break;
+                        }
+                        catch
+                        {
+                            // Can't set this part, try the next one
+                            _editor.Part = null;
+                            Type.Text = "";
+                            newPart?.Dispose();
+                        }
+                    }
+
+                    if (index >= count)
+                    {
+                        // Restore current part if none can be set
+                        _editor.Part = part;
+                        Type.Text = _packageName + " - " + part.Type;
+                    }
                 }
             }
         }
@@ -184,6 +229,23 @@ namespace MyScript.IInk.Demo
                 NewPart();
             else
                 NewFile();
+        }
+
+        private void SavePackage()
+        {
+            var part = _editor.Part;
+            var package = part?.Package;
+            package?.Save();
+        }
+
+        private void ClosePackage()
+        {
+            var part = _editor.Part;
+            var package = part?.Package;
+            _editor.Part = null;
+            part?.Dispose();
+            package?.Dispose();
+            Type.Text = "";
         }
 
         private void TypeOfContentDialog_AddNewPart(string newPartType, bool newPackage)
@@ -198,37 +260,46 @@ namespace MyScript.IInk.Demo
 
                 if (!newPackage && (_editor.Part != null))
                 {
-                    var package = _editor.Part.Package;
+                    var previousPart = _editor.Part;
+                    var package = previousPart.Package;
 
-                    _editor.Part.Dispose();
-                    _editor.Part = null;
+                    try
+                    {
+                        _editor.Part = null;
 
-                    var part = package.CreatePart(newPartType);
-                    _editor.Part = part;
-                    Type.Text = _packageName + " - " + part.Type;
+                        var part = package.CreatePart(newPartType);
+                        _editor.Part = part;
+                        Type.Text = _packageName + " - " + part.Type;
+
+                        previousPart.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        _editor.Part = previousPart;
+                        Type.Text = _packageName + " - " + _editor.Part.Type;
+                        MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 else
                 {
-                    // Close current package
-                    if (_editor.Part != null)
+                    try
                     {
-                        var part = _editor.Part;
-                        var package = part?.Package;
-                        package?.Save();
-                        _editor.Part = null;
-                        part?.Dispose();
-                        package?.Dispose();
-                    }
+                        // Save and close current package
+                        SavePackage();
+                        ClosePackage();
 
-                    // Create package and part
-                    {
+                        // Create package and part
                         var packageName = MakeUntitledFilename();
                         var package = _engine.CreatePackage(packageName);
                         var part = package.CreatePart(newPartType);
-
                         _editor.Part = part;
                         _packageName = System.IO.Path.GetFileName(packageName);
                         Type.Text = _packageName + " - " + part.Type;
+                    }
+                    catch (Exception ex)
+                    {
+                        ClosePackage();
+                        MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
@@ -295,24 +366,37 @@ namespace MyScript.IInk.Demo
             if (!string.IsNullOrEmpty(filePath))
             {
                 var part = _editor.Part;
-
                 if (part == null)
                     return;
 
-                part.Package.SaveAs(filePath);
-                _packageName = fileName;
-                Type.Text = _packageName + " - " + part.Type;
+                try
+                {
+                    // Save Package with new name
+                    part.Package.SaveAs(filePath);
+
+                    // Update internals
+                    _packageName = fileName;
+                    Type.Text = _packageName + " - " + part.Type;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            var part = _editor.Part;
-
-            if (part == null)
-                return;
-
-            part.Package.Save();
+            try
+            {
+                var part = _editor.Part;
+                var package = part?.Package;
+                package?.Save();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Open_Click(object sender, RoutedEventArgs e)
@@ -344,24 +428,23 @@ namespace MyScript.IInk.Demo
                 _lastSelectedBlock?.Dispose();
                 _lastSelectedBlock = null;
 
-                // Close current package
-                if (_editor.Part != null)
+                try
                 {
-                    var part = _editor.Part;
-                    var package = part?.Package;
-                    package?.Save();
-                    _editor.Part = null;
-                    part?.Dispose();
-                    package?.Dispose();
-                }
+                    // Save and close current package
+                    SavePackage();
+                    ClosePackage();
 
-                // Open package and select first part
-                {
+                    // Open package and select first part
                     var package = _engine.OpenPackage(filePath);
                     var part = package.GetPart(0);
                     _editor.Part = part;
                     _packageName = fileName;
                     Type.Text = _packageName + " - " + part.Type;
+                }
+                catch (Exception ex)
+                {
+                    ClosePackage();
+                    MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
