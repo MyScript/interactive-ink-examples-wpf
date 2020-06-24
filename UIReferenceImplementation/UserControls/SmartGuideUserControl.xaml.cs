@@ -23,6 +23,8 @@ namespace MyScript.IInk.UIReferenceImplementation
             public List<string> Candidates;
         };
 
+        private const int SMART_GUIDE_SIZE = 32;
+
         private const int SMART_GUIDE_FADE_OUT_DELAY_WRITE_IN_DIAGRAM_DEFAULT   = 3000;
         private const int SMART_GUIDE_FADE_OUT_DELAY_WRITE_OTHER_DEFAULT        = 0;
         private const int SMART_GUIDE_FADE_OUT_DELAY_OTHER_DEFAULT              = 0;
@@ -387,7 +389,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var y = topLeft.Y;
                 var width = topRight.X - topLeft.X;
 
-                Width = width;
+                Width = Math.Max(width, 3 * SMART_GUIDE_SIZE);
                 Margin = new Thickness(Math.Floor(x), Math.Floor(y - ActualHeight), 0, 0);
 
                 Label lastUpdatedItem = null;
