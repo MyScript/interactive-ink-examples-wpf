@@ -375,6 +375,21 @@ namespace MyScript.IInk.UIReferenceImplementation
                 float deltaY = _lastPointerPosition.Y - previousPosition.Y;
                 Scroll(-deltaX, -deltaY);
             }
+            else if (e is StylusEventArgs)
+            {
+                var pointList = ((StylusEventArgs)e).GetStylusPoints(this);
+                if (pointList.Count > 0)
+                {
+                    var events = new PointerEvent[pointList.Count];
+                    for (int i = 0; i < pointList.Count; ++i)
+                    {
+                        var p_ = pointList[i].ToPoint();
+                        events[i] = new PointerEvent(PointerEventType.MOVE, (float)p_.X, (float)p_.Y, GetTimestamp(e), GetForce(e), pointerType, pointerId);
+                    }
+
+                    _editor.PointerEvents(events);
+                }
+            }
             else
             {
                 // Send pointer move event to the editor
