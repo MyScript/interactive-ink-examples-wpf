@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MyScript")]
 [assembly: AssemblyProduct("MyScript.InteractiveInk.GetStarted.Wpf")]
-[assembly: AssemblyCopyright("Copyright MyScript. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright @ MyScript. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
