@@ -1,9 +1,12 @@
 // Copyright MyScript. All right reserved.
 
+using MyScript.IInk.Graphics;
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace MyScript.IInk.UIReferenceImplementation
 {
@@ -97,8 +100,8 @@ namespace MyScript.IInk.UIReferenceImplementation
     /// <summary>
     /// Interaction logic for EditorControl.xaml
     /// </summary>
-    public sealed partial class EditorUserControl : UserControl,IRenderTarget
-    {       
+    public sealed partial class EditorUserControl : UserControl, IRenderTarget
+    {
         private Engine _engine;
         private Editor _editor;
         private Renderer _renderer;
@@ -247,6 +250,11 @@ namespace MyScript.IInk.UIReferenceImplementation
                 if ((layers & LayerType.CAPTURE) != 0)
                     captureLayer.Update();
             }
+        }
+
+        public float GetPixelDensity()
+        {
+            return 1.0f;
         }
 
         private void EnableSmartGuide(bool enable)
