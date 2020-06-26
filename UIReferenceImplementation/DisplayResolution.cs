@@ -1,4 +1,4 @@
-﻿// Copyright MyScript. All right reserved.
+// Copyright @ MyScript. All rights reserved.
 
 using System;
 using System.Runtime.InteropServices;
