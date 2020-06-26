@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 
+
 namespace MyScript.IInk.UIReferenceImplementation
 {
     public class Canvas : ICanvas
@@ -20,8 +21,8 @@ namespace MyScript.IInk.UIReferenceImplementation
                 Transform = transform;
             }
         };
-
-        private System.Windows.Media.DrawingContext _drawingContext;
+        
+        private System.Windows.Media.DrawingContext _drawingContext = null;
         private IRenderTarget _target;
         private ImageLoader _imageLoader;
 
@@ -42,6 +43,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         public Canvas(System.Windows.Media.DrawingContext drawingContext, IRenderTarget target, ImageLoader imageLoader)
         {
             _drawingContext = drawingContext;
+
             _target = target;
             _imageLoader = imageLoader;
 
@@ -191,26 +193,33 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             if (clipContent)
             {
+                // Save previous
                 _groups.Add(id, _activeGroup);
+
+                // Apply transform to clipping rect
                 var rect = new Rect(x, y, width, height);
+                var transform = new System.Windows.Media.Matrix(    _transform.XX, _transform.XY,
+                                                                    _transform.YX, _transform.YY,
+                                                                    _transform.TX, _transform.TY );
+                rect = Rect.Transform(rect, transform);
+
+                // Push clipping rect
                 _activeGroup = new Group(rect, _transform);
-            }
-            else
-            {
-                _activeGroup = new Group(Rect.Empty, new Transform());
+                var geometry = new System.Windows.Media.RectangleGeometry(_activeGroup.Bound);
+                _drawingContext.PushClip(geometry);
             }
         }
 
         public void EndGroup(string id)
         {
+            // Restore previous (if any)
             if (_groups.ContainsKey(id))
             {
                 _activeGroup = _groups[id];
                 _groups.Remove(id);
-            }
-            else
-            {
-                _activeGroup = new Group(Rect.Empty, new Transform());
+                
+                // Pop clipping rect
+                _drawingContext.Pop();
             }
         }
 
@@ -222,62 +231,19 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
         }
 
-        private bool PushRenderStates()
+        private void PushRenderStates()
         {
-            var clipped = !_activeGroup.Bound.IsEmpty;
-
-            // Push clipping rect
-            if (clipped)
-            {
-                var clipTransform = new Transform(_activeGroup.Transform);
-
-                // Push clipping transform
-                {
-                    var transform = new System.Windows.Media.MatrixTransform(   clipTransform.XX, clipTransform.XY,
-                                                                                clipTransform.YX, clipTransform.YY,
-                                                                                clipTransform.TX, clipTransform.TY);
-                    _drawingContext.PushTransform(transform);
-                }
-
-                // Push clipping rect
-                {
-                    var geometry = new System.Windows.Media.RectangleGeometry(_activeGroup.Bound);
-                    _drawingContext.PushClip(geometry);
-                }
-
-                // Push inverse clipping transform
-                {
-                    clipTransform.Invert();
-                    var transform = new System.Windows.Media.MatrixTransform(   clipTransform.XX, clipTransform.XY,
-                                                                                clipTransform.YX, clipTransform.YY,
-                                                                                clipTransform.TX, clipTransform.TY);
-                    _drawingContext.PushTransform(transform);
-                }
-            }
-
             // Push current transform
-            {
-                var transform = new System.Windows.Media.MatrixTransform(   _transform.XX, _transform.XY,
-                                                                            _transform.YX, _transform.YY,
-                                                                            _transform.TX, _transform.TY);
-                _drawingContext.PushTransform(transform);
-            }
-
-            return clipped;
+            var transform = new System.Windows.Media.MatrixTransform(   _transform.XX, _transform.XY,
+                                                                        _transform.YX, _transform.YY,
+                                                                        _transform.TX, _transform.TY );
+            _drawingContext.PushTransform(transform);
         }
 
-        private void PopRenderStates(bool clipped)
+        private void PopRenderStates()
         {
             // Pop current transform
             _drawingContext.Pop();
-
-            // Pop clipping rect
-            if (clipped)
-            {
-                _drawingContext.Pop();  // inverse transform
-                _drawingContext.Pop();  // clipping rect
-                _drawingContext.Pop();  // transform
-            }
         }
 
         /// <summary>Draw Path to canvas according path</summary>
@@ -287,7 +253,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             if (draw)
             {
-                var clipped = PushRenderStates();
+                PushRenderStates();
                 var p = (RenderPath)path;
                 var geometry = p.FinalizeGeometry();
 
@@ -310,7 +276,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                     _drawingContext.DrawGeometry(null, _stroke.Clone(), geometry);
                 }
 
-                PopRenderStates(clipped);
+                PopRenderStates();
             }
         }
 
@@ -320,9 +286,9 @@ namespace MyScript.IInk.UIReferenceImplementation
             var color_ = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb((byte)color.A, (byte)color.R, (byte)color.G, (byte)color.B));
             var rect = new Rect(x, y, width, height);
 
-            var clipped = PushRenderStates();
+            PushRenderStates();
             _drawingContext.DrawRectangle(color_, null, rect);
-            PopRenderStates(clipped);
+            PopRenderStates();
         }
 
         /// <summary>Draw Rectangle to canvas according to region</summary>
@@ -332,7 +298,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             if (draw)
             {
-                var clipped = PushRenderStates();
+                PushRenderStates();
 
                 var rect = new Rect(x, y, width, height);
 
@@ -346,7 +312,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                     _drawingContext.DrawRectangle(null, _stroke.Clone(), rect);
                 }
 
-                PopRenderStates(clipped);
+                PopRenderStates();
             }
         }
 
@@ -355,9 +321,9 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             if (_strokeColor.Color.A > 0)
             {
-                var clipped = PushRenderStates();
+                PushRenderStates();
                 _drawingContext.DrawLine(_stroke.Clone(), new System.Windows.Point(x1, y1), new System.Windows.Point(x2, y2));
-                PopRenderStates(clipped);
+                PopRenderStates();
             }
         }
 
@@ -380,18 +346,18 @@ namespace MyScript.IInk.UIReferenceImplementation
                 if (_fillColor.Color.A > 0)
                 {
                     var rect = new Rect(x, y, width, height);
-                    var clipped = PushRenderStates();
+                    PushRenderStates();
                     _drawingContext.DrawRectangle(_fillColor, null, rect);
-                    PopRenderStates(clipped);
+                    PopRenderStates();
                 }
             }
             else
             {
                 // draw the image
                 var rect = new Rect(x, y, width, height);
-                var clipped = PushRenderStates();
+                PushRenderStates();
                 _drawingContext.DrawImage(image, rect);
-                PopRenderStates(clipped);
+                PopRenderStates();
             }
         }
 
@@ -412,9 +378,9 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                 // Draw the text
                 var baseline = (float)ft.Baseline;
-                var clipped = PushRenderStates();
+                PushRenderStates();
                 _drawingContext.DrawText(ft, new System.Windows.Point(x, y - baseline));
-                PopRenderStates(clipped);
+                PopRenderStates();
             }
         }
 
