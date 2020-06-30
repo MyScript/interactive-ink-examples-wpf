@@ -107,6 +107,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         private Renderer _renderer;
         private ImageLoader _loader;
         private bool _smartGuideEnabled = true;
+        private float _pixelDensity = 1.0f;
 
         public Engine Engine
         {
@@ -181,9 +182,11 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void Initialize(Window window)
         {
-            Vector dpi = DisplayResolution.GetDpi(window);
-            float dpiX = (float)dpi.X;
-            float dpiY = (float)dpi.Y;
+            Vector rawDPI = DisplayResolution.GetDpi(window, true);
+            Vector effectiveDPI = DisplayResolution.GetDpi(window, false);
+            float dpiX = (float)effectiveDPI.X;
+            float dpiY = (float)effectiveDPI.Y;
+            _pixelDensity = (float)rawDPI.Y / dpiY;
 
             _renderer = _engine.CreateRenderer(dpiX, dpiY, this);
             _renderer.AddListener(new RendererListener(this));
@@ -254,7 +257,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public float GetPixelDensity()
         {
-            return 1.0f;
+            return _pixelDensity;
         }
 
         private void EnableSmartGuide(bool enable)

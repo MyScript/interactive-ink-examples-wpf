@@ -10,12 +10,12 @@ namespace MyScript.IInk.UIReferenceImplementation
 {
     public class DisplayResolution
     {
-        public static Vector GetDpi(Window window)
+        public static Vector GetDpi(Window window, Boolean rawDPI)
         {
             IntPtr hwnd = new WindowInteropHelper(window).Handle;
             uint dpiX = 0;
             uint dpiY = 0;
-            GetDpi(hwnd, out dpiX, out dpiY);
+            GetDpi(hwnd, rawDPI, out dpiX, out dpiY);
 
             var source = PresentationSource.FromVisual(window);
             Matrix transform = source.CompositionTarget.TransformFromDevice;
@@ -30,10 +30,11 @@ namespace MyScript.IInk.UIReferenceImplementation
         /// </summary>
         /// <param name="dpiX">Gives the horizontal scaling back (in dpi).</param>
         /// <param name="dpiY">Gives the vertical scaling back (in dpi).</param>
-        private static void GetDpi(IntPtr hwnd, out uint dpiX, out uint dpiY)
+        private static void GetDpi(IntPtr hwnd, Boolean rawDPI, out uint dpiX, out uint dpiY)
         {
             var hmonitor = MonitorFromWindow(hwnd, _MONITOR_DEFAULTTONEAREST);
-            var hresult = GetDpiForMonitor(hmonitor, _MDT_RAW_DPI, out dpiX, out dpiY).ToInt64();
+            var typeDPI = rawDPI ? _MDT_RAW_DPI : _MDT_EFFECTIVE_DPI;
+            var hresult = GetDpiForMonitor(hmonitor, typeDPI, out dpiX, out dpiY).ToInt64();
 
             switch (hresult)
             {
@@ -64,6 +65,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         const long _E_BADARG = 0x800700a0L;
 
         const int _MONITOR_DEFAULTTONEAREST = 2;
+        const int _MDT_EFFECTIVE_DPI = 0;
         const int _MDT_RAW_DPI = 2;
     }
 }
