@@ -45,7 +45,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
     }
 
-    public class EditorListener : IEditorListener2
+    public class EditorListener : IEditorListener
     {
         private EditorUserControl _ucEditor;
 
@@ -90,9 +90,9 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
-        public void OnError(Editor editor, string blockId, string message)
+        public void OnError(Editor editor, string blockId, EditorError error, string message)
         {
-            MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(message, "Error " + error, MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
