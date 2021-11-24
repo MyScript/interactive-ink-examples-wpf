@@ -34,7 +34,14 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             var hmonitor = MonitorFromWindow(hwnd, _MONITOR_DEFAULTTONEAREST);
             var typeDPI = rawDPI ? _MDT_RAW_DPI : _MDT_EFFECTIVE_DPI;
-            var hresult = GetDpiForMonitor(hmonitor, typeDPI, out dpiX, out dpiY).ToInt64();
+            var hresult_ = GetDpiForMonitor(hmonitor, typeDPI, out dpiX, out dpiY);
+
+            // When compiling for x86, the 32 bits IntPtr returned by GetDpiForMonitor can be negative
+            // (for example _E_NOTSUPPORTED == 0x80070032).
+            // Casting to Int64 (required when compiling for x64) returns also a negative value in x86
+            // (for example 0xFFFFFFFF80070032 for _E_NOTSUPPORTED), and so we need to mask the value
+            // to get the significant lower 32 bits part.
+            var hresult = hresult_.ToInt64() & 0xFFFFFFFF;
 
             switch (hresult)
             {
