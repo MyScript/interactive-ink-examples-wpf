@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "MyScript.InteractiveInk.Wpf": "1.4.1",
+    "MyScript.InteractiveInk.Wpf": "1.5.1",
     "System.Json": "4.4.0"
   },
   "frameworks": {
