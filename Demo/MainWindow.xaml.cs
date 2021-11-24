@@ -133,9 +133,6 @@ namespace MyScript.IInk.Demo
 
                 if (index > 0)
                 {
-                    // Reset viewing parameters
-                    UcEditor.ResetView(false);
-
                     _lastSelectedBlock?.Dispose();
                     _lastSelectedBlock = null;
                     _editor.Part = null;
@@ -168,6 +165,9 @@ namespace MyScript.IInk.Demo
                         _editor.Part = part;
                         Type.Text = _packageName + " - " + part.Type;
                     }
+
+                    // Reset viewing parameters
+                    UcEditor.ResetView(false);
                 }
             }
         }
@@ -184,9 +184,6 @@ namespace MyScript.IInk.Demo
 
                 if (index < count - 1)
                 {
-                    // Reset viewing parameters
-                    UcEditor.ResetView(false);
-
                     _lastSelectedBlock?.Dispose();
                     _lastSelectedBlock = null;
                     _editor.Part = null;
@@ -219,6 +216,9 @@ namespace MyScript.IInk.Demo
                         _editor.Part = part;
                         Type.Text = _packageName + " - " + part.Type;
                     }
+
+                    // Reset viewing parameters
+                    UcEditor.ResetView(false);
                 }
             }
         }
@@ -252,9 +252,6 @@ namespace MyScript.IInk.Demo
         {
             if (newPartType != string.Empty)
             {
-                // Reset viewing parameters
-                UcEditor.ResetView(false);
-
                 _lastSelectedBlock?.Dispose();
                 _lastSelectedBlock = null;
 
@@ -302,6 +299,9 @@ namespace MyScript.IInk.Demo
                         MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
+
+                // Reset viewing parameters
+                UcEditor.ResetView(false);
             }
         }
 
@@ -422,9 +422,6 @@ namespace MyScript.IInk.Demo
 
             if (!string.IsNullOrEmpty(filePath))
             {
-                // Reset viewing parameters
-                UcEditor.ResetView(false);
-
                 _lastSelectedBlock?.Dispose();
                 _lastSelectedBlock = null;
 
@@ -446,6 +443,9 @@ namespace MyScript.IInk.Demo
                     ClosePackage();
                     MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+
+                // Reset viewing parameters
+                UcEditor.ResetView(false);
             }
         }
 
