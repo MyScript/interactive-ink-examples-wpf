@@ -1,6 +1,7 @@
 ﻿{
   "dependencies": {
-    "FontAwesome.WPF": "4.7.0.9"
+    "FontAwesome.WPF": "4.7.0.9",
+    "MyScript.InteractiveInk.Wpf": "1.5.1"
   },
   "frameworks": {
     "net452": {}

@@ -1,5 +1,7 @@
 ﻿{
-  "dependencies": {},
+  "dependencies": {
+    "MyScript.InteractiveInk.Wpf": "1.5.1"
+  },
   "frameworks": {
     "net452": {}
   },
