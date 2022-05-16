@@ -81,7 +81,7 @@
       <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="System.Json">
-      <Version>4.4.0</Version>
+      <Version>4.7.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
