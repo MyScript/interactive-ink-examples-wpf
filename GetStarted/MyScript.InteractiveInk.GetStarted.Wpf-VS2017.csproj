@@ -185,6 +185,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MyScript.InteractiveInk.Wpf">
+      <Version>1.5.1</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>powershell.exe -NonInteractive -executionpolicy unrestricted -File "$(SolutionDir)getRecognitionAssets.ps1"</PreBuildEvent>
