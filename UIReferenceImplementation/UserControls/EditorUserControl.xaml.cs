@@ -352,7 +352,14 @@ namespace MyScript.IInk.UIReferenceImplementation
             _lastPointerPosition = new Graphics.Point((float)p.X, (float)p.Y);
             _onScroll = false;
 
-            _editor.PointerDown((float)p.X, (float)p.Y, GetTimestamp(e), GetForce(e), GetPointerType(e), GetPointerId(e));
+            try
+            {
+                _editor.PointerDown((float)p.X, (float)p.Y, GetTimestamp(e), GetForce(e), GetPointerType(e), GetPointerId(e));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         /// <summary>Retranscribe pointer event to editor</summary>
@@ -400,13 +407,28 @@ namespace MyScript.IInk.UIReferenceImplementation
                         events[i] = new PointerEvent(PointerEventType.MOVE, (float)p_.X, (float)p_.Y, GetTimestamp(e), GetForce(e), pointerType, pointerId);
                     }
 
-                    _editor.PointerEvents(events);
+                    // Send pointer move events to the editor
+                    try
+                    {
+                        _editor.PointerEvents(events);
+                    }
+                    catch
+                    {
+                        // Don't show error for every move event
+                    }
                 }
             }
             else
             {
                 // Send pointer move event to the editor
-                _editor.PointerMove((float)p.X, (float)p.Y, GetTimestamp(e), GetForce(e), pointerType, pointerId);
+                try
+                {
+                    _editor.PointerMove((float)p.X, (float)p.Y, GetTimestamp(e), GetForce(e), pointerType, pointerId);
+                }
+                catch
+                {
+                    // Don't show error for every move event
+                }
             }
         }
 
@@ -431,7 +453,14 @@ namespace MyScript.IInk.UIReferenceImplementation
             else
             {
                 // Send pointer up event to the editor
-                _editor.PointerUp((float)p.X, (float)p.Y, GetTimestamp(e), GetForce(e), GetPointerType(e), GetPointerId(e));
+                try
+                {
+                    _editor.PointerUp((float)p.X, (float)p.Y, GetTimestamp(e), GetForce(e), GetPointerType(e), GetPointerId(e));
+                }
+                catch
+                {
+                    // Don't show error for up event
+                }
             }
         }
 
