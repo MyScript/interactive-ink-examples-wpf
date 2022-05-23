@@ -778,5 +778,25 @@ namespace MyScript.IInk.UIReferenceImplementation
             _renderer.ViewOffset = newOffset;
             Invalidate(_renderer, LayerType.LayerType_ALL);
         }
+
+        public bool SupportsOffscreenRendering()
+        {
+            return false;
+        }
+
+        public uint CreateOffscreenRenderSurface(int width, int height, bool alphaMask)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReleaseOffscreenRenderSurface(uint surfaceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICanvas CreateOffscreenRenderCanvas(uint surfaceId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -502,5 +502,18 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             PopRenderStates();
         }
+
+        public void StartDraw(int x, int y, int width, int height)
+        {
+        }
+
+        public void EndDraw()
+        {
+        }
+
+        public void BlendOffscreen(uint id, float src_x, float src_y, float src_width, float src_height, float dest_x, float dest_y, float dest_width, float dest_height, Color color)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

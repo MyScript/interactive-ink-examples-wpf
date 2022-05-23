@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace MyScript.IInk.UIReferenceImplementation
 {
-    public class FontMetricsProvider : IFontMetricsProvider2
+    public class FontMetricsProvider : IFontMetricsProvider
     {
         private float dpiX;
         private float dpiY;
