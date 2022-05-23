@@ -95,6 +95,33 @@ namespace MyScript.IInk.Demo
             UcEditor?.Closing();
         }
 
+        private void EnableRawContentConversion()
+        {
+            // Activate handwriting recognition for text and shapes
+            _engine.Configuration.SetBoolean("raw-content.recognition.text", true);
+            _engine.Configuration.SetBoolean("raw-content.recognition.shape", true);
+
+            // Allow conversion of text, nodes and edges
+            _engine.Configuration.SetBoolean("raw-content.convert.node", true);
+            _engine.Configuration.SetBoolean("raw-content.convert.text", true);
+            _engine.Configuration.SetBoolean("raw-content.convert.edge", true);
+
+            // Allow converting shapes by holding the pen in position
+            _engine.Configuration.SetBoolean("raw-content.convert.shape-on-hold", true);
+
+            // Allow interactions
+            _engine.Configuration.SetBoolean("raw-content.tap-interactions", true);
+            _engine.Configuration.SetBoolean("raw-content.eraser.erase-precisely", false);
+
+            // Show alignment guides and snap to them
+            _engine.Configuration.SetBoolean("raw-content.guides.enable", true);
+            _engine.Configuration.SetBoolean("raw-content.guides.snap", true);
+
+            // Allow gesture detection
+            var gestures = new string[] { "underline", "double-underline", "scratch-out", "join", "insert", "strike-through" };
+            _engine.Configuration.SetStringArray("raw-content.pen.gestures", gestures);
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -118,6 +145,8 @@ namespace MyScript.IInk.Demo
             var localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var tempFolder =  Path.Combine(localFolder, "MyScript", "tmp");
             _engine.Configuration.SetString("content-package.temp-folder", tempFolder);
+
+            EnableRawContentConversion();
 
             // Initialize the editor with the engine
             UcEditor.Engine = _engine;
