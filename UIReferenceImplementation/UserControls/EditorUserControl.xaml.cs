@@ -58,12 +58,17 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
-        public void SelectionChanged(Editor editor, string[] blockIds)
+        public void SelectionChanged(Editor editor)
         {
             if (_ucEditor.SmartGuideEnabled && _ucEditor.smartGuide != null)
             {
-                var dispatcher = _ucEditor.Dispatcher;
-                dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnSelectionChanged(blockIds); }));
+                using (var selection = editor.GetSelection())
+                {
+                    var mode = editor.GetSelectionMode();
+                    var blockIds = editor.GetIntersectingBlocks(selection);
+                    var dispatcher = _ucEditor.Dispatcher;
+                    dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnSelectionChanged(blockIds, mode); }));
+                }
             }
         }
 

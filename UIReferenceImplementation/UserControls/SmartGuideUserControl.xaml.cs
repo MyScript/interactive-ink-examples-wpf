@@ -391,7 +391,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         private void UpdateWidgets(UpdateCause cause)
         {
-            if (_currentBlock != null)
+            if (_currentBlock?.IsValid() ?? false)
             {
                 // Update size and position
                 var rectangle = _currentBlock.Box;
@@ -539,19 +539,22 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
-        public void OnSelectionChanged(string[] blockIds)
+        public void OnSelectionChanged(string[] blockIds, MyScript.IInk.ContentSelectionMode mode)
         {
             _selectedBlock?.Dispose();
             _selectedBlock = null;
 
-            foreach (var blockId in blockIds)
+            if ((blockIds != null) && (mode != MyScript.IInk.ContentSelectionMode.NONE) && (mode != MyScript.IInk.ContentSelectionMode.LASSO))
             {
-                using (var block = _editor.GetBlockById(blockId))
+                foreach (var blockId in blockIds)
                 {
-                    if ( (block != null) && (block.Type == "Text") )
+                    using (var block = _editor.GetBlockById(blockId))
                     {
-                        _selectedBlock = block?.ShallowCopy();
-                        break;
+                        if ((block != null) && (block.Type == "Text"))
+                        {
+                            _selectedBlock = block?.ShallowCopy();
+                            break;
+                        }
                     }
                 }
             }
@@ -565,20 +568,15 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             if (selectionChanged)
             {
-                if (_selectedBlock != null)
-                {
-                    BackupData();
+                BackupData();
+                _currentBlock?.Dispose();
+                _currentBlock = _selectedBlock?.ShallowCopy();
+                UpdateData();
 
-                    _currentBlock?.Dispose();
-                    _currentBlock = _selectedBlock?.ShallowCopy();
-
-                    UpdateData();
+                if (_currentBlock != null)
                     UpdateWidgets(UpdateCause.Selection);
-                }
                 else
-                {
                     ResetWidgets();
-                }
             }
         }
 
@@ -588,7 +586,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             _activeBlock = _editor.GetBlockById(blockId);
 
             if ( (_currentBlock != null) && (_activeBlock != null) && (_currentBlock.Id == _activeBlock.Id) )
-                return; // selectionChanged already changed the active block
+                return;
 
             BackupData();
             _currentBlock?.Dispose();
