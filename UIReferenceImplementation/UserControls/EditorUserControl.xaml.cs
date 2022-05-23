@@ -178,6 +178,11 @@ namespace MyScript.IInk.UIReferenceImplementation
                 ToolController.SetToolForType(PointerType.TOUCH, ToolController.GetToolForType(PointerType.PEN));
         }
 
+        public void SetToolStyle(PointerTool pointerTool, string style)
+        {
+            ToolController.SetToolStyle(pointerTool, style);
+        }
+
         private bool _activePen = true;
         private PointerType _inputType = (PointerType)(-1);
         private int _inputDeviceId = -1;

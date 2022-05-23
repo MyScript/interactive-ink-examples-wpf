@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -24,6 +25,23 @@ namespace MyScript.IInk.Demo
 
         private int _filenameIndex;
         private string _packageName;
+
+        private string _penWidth;
+        private string _penColor;
+        private string _highlighterWidth;
+        private string _highlighterColor;
+
+        private const float  PenMediumWidth = 0.625F;       // default (in mm)
+        private const string PenBlackColor  = "#000000";    // default
+        private const string PenRedColor    = "#EA4335";
+        private const string PenGreenColor  = "#34A853";
+        private const string PenBlueColor   = "#4285F4";
+
+        private const float  HighlighterMediumWidth = 5.0F;         // default (in mm)
+        private const string HighlighterYellowColor = "#FBBC0566";  // default
+        private const string HighlighterRedColor    = "#EA433566";
+        private const string HighlighterGreenColor  = "#34A85366";
+        private const string HighlighterBlueColor   = "#4285F466";
 
         public MainWindow()
         {
@@ -106,9 +124,13 @@ namespace MyScript.IInk.Demo
             UcEditor.Initialize(this);
             UcEditor.SmartGuide.MoreClicked += ShowSmartGuideMenu;
 
-            // Set default tool/mode
+            // Set default tool/mode/styles
             SetInputTool(PointerTool.PEN);
             ActivePen_Click(ActivePen, null);
+            PenWidth_Clicked(PenMedium, null);
+            PenColor_Clicked(PenBlack, null);
+            HighlighterWidth_Clicked(HighlighterMedium, null);
+            HighlighterColor_Clicked(HighlighterYellow, null);
 
             NewFile();
         }
@@ -1002,16 +1024,170 @@ namespace MyScript.IInk.Demo
             UcEditor.SetActivePen(enabled);
         }
 
-        private void More_Open(object sender, EventArgs e)
+        private void ApplyToolStyle(PointerTool pointerTool)
         {
-            var box = sender as ComboBox;
-            box.SelectedIndex = -1;
+            if (pointerTool == PointerTool.PEN)
+            {
+                string newStyle = (string.IsNullOrEmpty(_penWidth) ? _penWidth : "-myscript-pen-width: " + _penWidth + "; ")
+                                + (string.IsNullOrEmpty(_penColor) ? _penColor : "color: " + _penColor + "; ");
+                UcEditor.SetToolStyle(PointerTool.PEN, newStyle);
+            }
+            else if (pointerTool == PointerTool.HIGHLIGHTER)
+            {
+                string newStyle = (string.IsNullOrEmpty(_highlighterWidth) ? _highlighterWidth : "-myscript-pen-width: " + _highlighterWidth + "; ")
+                                + (string.IsNullOrEmpty(_highlighterColor) ? _highlighterColor : "color: " + _highlighterColor + "; ");
+                UcEditor.SetToolStyle(PointerTool.HIGHLIGHTER, newStyle);
+            }
+        }
+
+        private void PenWidth_Clicked(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            if (menuItem.IsChecked)
+            {
+                if (menuItem == PenThin)
+                {
+                    PenMedium.IsChecked = false;
+                    PenLarge.IsChecked = false;
+                    _penWidth = (PenMediumWidth / 3.0F).ToString(CultureInfo.InvariantCulture);
+                }
+                else if (menuItem == PenLarge)
+                {
+                    PenThin.IsChecked = false;
+                    PenMedium.IsChecked = false;
+                    _penWidth = (PenMediumWidth * 3.0F).ToString(CultureInfo.InvariantCulture);
+                }
+                else  // PenMedium
+                {
+                    PenThin.IsChecked = false;
+                    PenLarge.IsChecked = false;
+                    _penWidth = PenMediumWidth.ToString(CultureInfo.InvariantCulture);
+                }
+                ApplyToolStyle(PointerTool.PEN);
+            }
+            else
+            {
+                menuItem.IsChecked = true;
+            }
+        }
+
+        private void PenColor_Clicked(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            if (menuItem.IsChecked)
+            {
+                if (menuItem == PenRed)
+                {
+                    PenBlack.IsChecked = false;
+                    PenGreen.IsChecked = false;
+                    PenBlue.IsChecked = false;
+                    _penColor = PenRedColor;
+                }
+                else if (menuItem == PenGreen)
+                {
+                    PenBlack.IsChecked = false;
+                    PenRed.IsChecked = false;
+                    PenBlue.IsChecked = false;
+                    _penColor = PenGreenColor;
+                }
+                else if (menuItem == PenBlue)
+                {
+                    PenBlack.IsChecked = false;
+                    PenRed.IsChecked = false;
+                    PenGreen.IsChecked = false;
+                    _penColor = PenBlueColor;
+                }
+                else // PenBlack
+                {
+                    PenRed.IsChecked = false;
+                    PenGreen.IsChecked = false;
+                    PenBlue.IsChecked = false;
+                    _penColor = PenBlackColor;
+                }
+                ApplyToolStyle(PointerTool.PEN);
+            }
+            else
+            {
+                menuItem.IsChecked = true;
+            }
+        }
+
+        private void HighlighterWidth_Clicked(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            if (menuItem.IsChecked)
+            {
+                if (menuItem == HighlighterThin)
+                {
+                    HighlighterMedium.IsChecked = false;
+                    HighlighterLarge.IsChecked = false;
+                    _highlighterWidth = (HighlighterMediumWidth / 3.0F).ToString(CultureInfo.InvariantCulture);
+                }
+                else if (menuItem == HighlighterLarge)
+                {
+                    HighlighterThin.IsChecked = false;
+                    HighlighterMedium.IsChecked = false;
+                    _highlighterWidth = (HighlighterMediumWidth * 3.0F).ToString(CultureInfo.InvariantCulture);
+                }
+                else  // HighlighterMedium
+                {
+                    HighlighterThin.IsChecked = false;
+                    HighlighterLarge.IsChecked = false;
+                    _highlighterWidth = HighlighterMediumWidth.ToString(CultureInfo.InvariantCulture);
+                }
+                ApplyToolStyle(PointerTool.HIGHLIGHTER);
+            }
+            else
+            {
+                menuItem.IsChecked = true;
+            }
+        }
+
+        private void HighlighterColor_Clicked(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            if (menuItem.IsChecked)
+            {
+                if (menuItem == HighlighterRed)
+                {
+                    HighlighterYellow.IsChecked = false;
+                    HighlighterGreen.IsChecked = false;
+                    HighlighterBlue.IsChecked = false;
+                    _highlighterColor = HighlighterRedColor;
+                }
+                else if (menuItem == HighlighterGreen)
+                {
+                    HighlighterYellow.IsChecked = false;
+                    HighlighterRed.IsChecked = false;
+                    HighlighterBlue.IsChecked = false;
+                    _highlighterColor = HighlighterGreenColor;
+                }
+                else if (menuItem == HighlighterBlue)
+                {
+                    HighlighterYellow.IsChecked = false;
+                    HighlighterRed.IsChecked = false;
+                    HighlighterGreen.IsChecked = false;
+                    _highlighterColor = HighlighterBlueColor;
+                }
+                else // HighlighterYellow
+                {
+                    HighlighterRed.IsChecked = false;
+                    HighlighterGreen.IsChecked = false;
+                    HighlighterBlue.IsChecked = false;
+                    _highlighterColor = HighlighterYellowColor;
+                }
+                ApplyToolStyle(PointerTool.HIGHLIGHTER);
+            }
+            else
+            {
+                menuItem.IsChecked = true;
+            }
         }
 
         private void SmartGuideEnabled_Click(object sender, RoutedEventArgs e)
         {
-            CheckBox checkBox = sender as CheckBox;
-            UcEditor.SmartGuideEnabled = (bool)checkBox.IsChecked;
+            MenuItem menuItem = sender as MenuItem;
+            UcEditor.SmartGuideEnabled = (bool)menuItem.IsChecked;
         }
     }
 }

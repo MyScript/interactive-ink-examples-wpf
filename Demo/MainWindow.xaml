@@ -90,33 +90,46 @@
                         </Button.Content>
                     </Button>
 
-                    <ComboBox Grid.Column="12" FontSize="14" FontWeight="DemiBold" DropDownOpened="More_Open">
-                        <ComboBoxItem Selected="Clear_Click">
-                            <TextBlock Text="Clear" />
-                        </ComboBoxItem>
-                        <ComboBoxItem Selected="Convert_Click">
-                            <TextBlock Text="Convert" />
-                        </ComboBoxItem>
-                        <Separator />
-                        <ComboBoxItem Selected="New_Click">
-                            <TextBlock Text="New" />
-                        </ComboBoxItem>
-                        <ComboBoxItem Selected="Open_Click">
-                            <TextBlock Text="Open" />
-                        </ComboBoxItem>
-                        <ComboBoxItem Selected="Save_Click">
-                            <TextBlock Text="Save" />
-                        </ComboBoxItem>
-                        <ComboBoxItem Selected="SaveAs_Click">
-                            <TextBlock Text="Save as" />
-                        </ComboBoxItem>
-                        <Separator />
-                        <ComboBoxItem>
-                            <CheckBox VerticalContentAlignment="Center" IsChecked="true" Checked="SmartGuideEnabled_Click" Unchecked="SmartGuideEnabled_Click">
-                                Smart Guide
-                            </CheckBox>
-                        </ComboBoxItem>
-                    </ComboBox>
+                    <Menu Grid.Column="12" VerticalAlignment="Center" FontSize="14" FontWeight="DemiBold">
+                        <MenuItem>
+                            <MenuItem.Header>
+                                <Font:ImageAwesome Style="{StaticResource Icon }" Margin="10,24,10,24" Icon="EllipsisV" ToolTip="More" />
+                            </MenuItem.Header>
+                            <MenuItem Header="Clear" Click="Clear_Click"/>
+                            <MenuItem Header="Convert" Click="Convert_Click"/>
+                            <Separator />
+                            <MenuItem Header="New" Click="New_Click"/>
+                            <MenuItem Header="Open" Click="Open_Click"/>
+                            <MenuItem Header="Save" Click="Save_Click"/>
+                            <MenuItem Header="Save as" Click="SaveAs_Click"/>
+                            <Separator />
+                            <MenuItem Header="Style">
+                                <MenuItem Header="Pen width">
+                                    <MenuItem x:Name="PenThin"   Header="Thin"   IsCheckable="True" IsChecked="False" Click="PenWidth_Clicked"/>
+                                    <MenuItem x:Name="PenMedium" Header="Medium" IsCheckable="True" IsChecked="True"  Click="PenWidth_Clicked"/>
+                                    <MenuItem x:Name="PenLarge"  Header="Large"  IsCheckable="True" IsChecked="False" Click="PenWidth_Clicked"/>
+                                </MenuItem>
+                                <MenuItem Header="Pen color">
+                                    <MenuItem x:Name="PenBlack" Header="Black" IsCheckable="True" IsChecked="True"  Click="PenColor_Clicked"/>
+                                    <MenuItem x:Name="PenRed"   Header="Red"   IsCheckable="True" IsChecked="False" Click="PenColor_Clicked"/>
+                                    <MenuItem x:Name="PenGreen" Header="Green" IsCheckable="True" IsChecked="False" Click="PenColor_Clicked"/>
+                                    <MenuItem x:Name="PenBlue"  Header="Blue"  IsCheckable="True" IsChecked="False" Click="PenColor_Clicked"/>
+                                </MenuItem>
+                                <MenuItem Header="Highlighter width">
+                                    <MenuItem x:Name="HighlighterThin"   Header="Thin"   IsCheckable="True" IsChecked="False" Click="HighlighterWidth_Clicked"/>
+                                    <MenuItem x:Name="HighlighterMedium" Header="Medium" IsCheckable="True" IsChecked="True"  Click="HighlighterWidth_Clicked"/>
+                                    <MenuItem x:Name="HighlighterLarge"  Header="Large"  IsCheckable="True" IsChecked="False" Click="HighlighterWidth_Clicked"/>
+                                </MenuItem>
+                                <MenuItem Header="Highlighter color">
+                                    <MenuItem x:Name="HighlighterYellow" Header="Yellow" IsCheckable="True" IsChecked="True"  Click="HighlighterColor_Clicked"/>
+                                    <MenuItem x:Name="HighlighterRed"    Header="Red"    IsCheckable="True" IsChecked="False" Click="HighlighterColor_Clicked"/>
+                                    <MenuItem x:Name="HighlighterGreen"  Header="Green"  IsCheckable="True" IsChecked="False" Click="HighlighterColor_Clicked"/>
+                                    <MenuItem x:Name="HighlighterBlue"   Header="Blue"   IsCheckable="True" IsChecked="False" Click="HighlighterColor_Clicked"/>
+                                </MenuItem>
+                            </MenuItem>
+                            <MenuItem Header="Smart Guide" IsCheckable="True" IsChecked="True" Checked="SmartGuideEnabled_Click" Unchecked="SmartGuideEnabled_Click"/>
+                        </MenuItem>
+                    </Menu>
                 </Grid>
 
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8" >
@@ -145,10 +158,10 @@
                             <TextBlock Text="Highlighter" FontWeight="DemiBold" />
                         </ToggleButton.Content>
                     </ToggleButton>
-                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Column="5"/>
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="5,0,5,0" Grid.Column="5"/>
                     <CheckBox x:Name="ActivePen" VerticalAlignment="Center" Click="ActivePen_Click" IsChecked="True" Grid.Column="6">
                         <CheckBox.Content>
-                            <TextBlock Text="Active Pen" FontWeight="DemiBold" />
+                            <TextBlock Text="Active Pen" FontWeight="DemiBold" FontSize="14" />
                         </CheckBox.Content>
                     </CheckBox>
                 </StackPanel>
