@@ -13,13 +13,10 @@
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition  Height="auto"></RowDefinition>
-            <RowDefinition  Height="auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-
-        <Uc:EditorUserControl Margin="5" BorderThickness="1" BorderBrush="LightGray" Grid.Row="2" x:Name="UcEditor" />
 
         <Grid Grid.Row="0" Background="WhiteSmoke">
             <TextBlock x:Name="Type" FontSize="20" FontWeight="SemiBold"  HorizontalAlignment="Center" />
@@ -31,29 +28,20 @@
                 <ColumnDefinition  Width="*"></ColumnDefinition>
                 <ColumnDefinition  Width="*"></ColumnDefinition>
                 <ColumnDefinition  Width="*"></ColumnDefinition>
+                <ColumnDefinition  Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button Margin="20" Click="EditUndo_MenuItem_Click" Style="{StaticResource CustomButton}" Content="Undo" />
-            <Button Margin="20" Click="EditRedo_MenuItem_Click" Grid.Column="1" Style="{StaticResource CustomButton}" Content="Redo" />
-            <Button Margin="20" Click="EditClear_MenuItem_Click" Grid.Column="2" Style="{StaticResource CustomButton}" Content="Clear" />
-            <Button  Click="EditConvert_MenuItem_Click" Grid.Column="3" Style="{StaticResource CustomButton}" Content="Convert" />
+            <CheckBox x:Name="ActivePen" IsChecked="True" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ActivePen_Click" Grid.Column="0">
+                <CheckBox.Content>
+                    <TextBlock Text="Active Pen" FontSize="14" FontWeight="DemiBold" />
+                </CheckBox.Content>
+            </CheckBox>
+            <Button Margin="20" Click="EditUndo_MenuItem_Click" Grid.Column="1" Style="{StaticResource CustomButton}" Content="Undo" />
+            <Button Margin="20" Click="EditRedo_MenuItem_Click" Grid.Column="2" Style="{StaticResource CustomButton}" Content="Redo" />
+            <Button Margin="20" Click="EditClear_MenuItem_Click" Grid.Column="3" Style="{StaticResource CustomButton}" Content="Clear" />
+            <Button Margin="20" Click="EditConvert_MenuItem_Click" Grid.Column="4" Style="{StaticResource CustomButton}" Content="Convert" />
         </Grid>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8" >
-            <ToggleButton x:Name="Pen"  Style="{StaticResource CustomToggleButton}"  Click="Pen_Click" >
-                <ToggleButton.Content>
-                    <TextBlock Text="Pen" FontWeight="DemiBold" />
-                </ToggleButton.Content>
-            </ToggleButton>
-            <ToggleButton x:Name="Touch" Style="{StaticResource CustomToggleButton}" Click="Touch_Click" Grid.Column="1">
-                <ToggleButton.Content>
-                    <TextBlock Text="Touch" FontWeight="DemiBold" />
-                </ToggleButton.Content>
-            </ToggleButton>
-            <ToggleButton x:Name="Auto" Style="{StaticResource CustomToggleButton}" Click="Auto_Click"  Grid.Column="2">
-                <ToggleButton.Content>
-                    <TextBlock Text="Auto" FontWeight="DemiBold" />
-                </ToggleButton.Content>
-            </ToggleButton>
-        </StackPanel>
+        <Uc:EditorUserControl Margin="5" BorderThickness="1" BorderBrush="LightGray" Grid.Row="2" x:Name="UcEditor" />
+
     </Grid>
 </Window>

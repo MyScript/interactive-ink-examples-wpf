@@ -11,21 +11,6 @@ using System.Windows.Media;
 namespace MyScript.IInk.UIReferenceImplementation
 {
 
-    public enum InputMode
-    {
-        AUTO = 0,
-        PEN = 1,
-        TOUCH = 2
-    }
-
-    public enum InputType
-    {
-        NONE = -1,
-        MOUSE = 0,
-        STYLUS = 1,
-        TOUCH = 2
-    }
-
     public class RendererListener : IRendererListener
     {
         private EditorUserControl _ucEditor;
@@ -105,6 +90,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         private Engine _engine;
         private Editor _editor;
         private Renderer _renderer;
+        private ToolController _toolController;
         private ImageLoader _loader;
         private bool _smartGuideEnabled = true;
         private float _pixelDensity = 1.0f;
@@ -138,6 +124,14 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
+        public ToolController ToolController
+        {
+            get
+            {
+                return _toolController;
+            }
+        }
+
         public ImageLoader ImageLoader
         {
             get
@@ -167,9 +161,25 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
-        public InputMode InputMode { get; set; }
+        public void SetInputTool(PointerTool pointerTool)
+        {
+            ToolController.SetToolForType(PointerType.PEN,   pointerTool);
+            ToolController.SetToolForType(PointerType.MOUSE, pointerTool);
+            if (!_activePen)
+                ToolController.SetToolForType(PointerType.TOUCH, pointerTool);
+        }
 
-        private InputType _inputType = InputType.NONE;
+        public void SetActivePen(bool enabled)
+        {
+            _activePen = enabled;
+            if (enabled)
+                ToolController.SetToolForType(PointerType.TOUCH, PointerTool.HAND);
+            else
+                ToolController.SetToolForType(PointerType.TOUCH, ToolController.GetToolForType(PointerType.PEN));
+        }
+
+        private bool _activePen = true;
+        private PointerType _inputType = (PointerType)(-1);
         private int _inputDeviceId = -1;
         private bool _onScroll = false;
         private Graphics.Point _lastPointerPosition;
@@ -177,7 +187,6 @@ namespace MyScript.IInk.UIReferenceImplementation
         public EditorUserControl()
         {
             InitializeComponent();
-            InputMode = InputMode.PEN;
         }
 
         public void Initialize(Window window)
@@ -194,7 +203,9 @@ namespace MyScript.IInk.UIReferenceImplementation
             modelLayer.Renderer = _renderer;
             captureLayer.Renderer = _renderer;
 
-            _editor = _engine.CreateEditor(Renderer);
+            _toolController = _engine.CreateToolController();
+
+            _editor = _engine.CreateEditor(Renderer, ToolController);
             _editor.SetViewSize((int)Math.Round(captureLayer.ActualWidth), (int)Math.Round(captureLayer.ActualHeight));
             _editor.SetFontMetricsProvider(new FontMetricsProvider(dpiX, dpiY));
             _editor.AddListener(new EditorListener(this));
@@ -301,33 +312,26 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         private PointerType GetPointerType(InputEventArgs e)
         {
-            switch (InputMode)
-            {
-                case InputMode.AUTO:
-                    if (e is StylusEventArgs)
-                        return PointerType.PEN;
-                    else // if (e is TouchEventArgs || e is MouseEventArgs)
-                        return PointerType.TOUCH;
-                case InputMode.PEN:
-                    return PointerType.PEN;
-                case InputMode.TOUCH:
-                    return PointerType.TOUCH;
+            if (e is StylusEventArgs)
+                return PointerType.PEN;
+            else if (e is MouseEventArgs)
+                return PointerType.MOUSE;
+            else if (e is TouchEventArgs)
+                return PointerType.TOUCH;
 
-                default:
-                    return PointerType.PEN; // unreachable
-            }
+            return PointerType.CUSTOM_1;
         }
 
         private int GetPointerId(InputEventArgs e)
         {
             if (e is StylusEventArgs)
-                return (int)InputType.STYLUS;
+                return (int)PointerType.PEN;
             else if (e is MouseEventArgs)
-                return (int)InputType.MOUSE;
+                return (int)PointerType.MOUSE;
             else if (e is TouchEventArgs)
-                return (int)InputType.TOUCH;
+                return (int)PointerType.TOUCH;
 
-            return (int)InputType.NONE;
+            return (int)PointerType.CUSTOM_1;
         }
 
         private bool HasPart()
@@ -356,7 +360,8 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             _lastPointerPosition = new Graphics.Point((float)p.X, (float)p.Y);
 
-            if (!_onScroll && (pointerType == PointerType.TOUCH))
+            var pointerTool = _editor.ToolController.GetToolForType(pointerType);
+            if (!_onScroll && (pointerTool == PointerTool.HAND))
             {
                 float deltaMin = 3.0f;
                 float deltaX = _lastPointerPosition.X - previousPosition.X;
@@ -431,7 +436,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.NONE)
+            if (_inputType != (PointerType)(-1))
                 return;
 
             if (_inputDeviceId != -1)
@@ -440,7 +445,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             // Capture the touch device so all touch input is routed to this control.
             e.TouchDevice?.Capture(sender as UIElement, CaptureMode.SubTree);
 
-            _inputType = InputType.TOUCH;
+            _inputType = PointerType.TOUCH;
             _inputDeviceId = e.TouchDevice.Id;
 
             OnPointerDown(e);
@@ -454,7 +459,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.TOUCH)
+            if (_inputType != PointerType.TOUCH)
                 return;
 
             if (_inputDeviceId != e.TouchDevice.Id)
@@ -471,7 +476,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.TOUCH)
+            if (_inputType != PointerType.TOUCH)
                 return;
 
             if (_inputDeviceId != e.TouchDevice.Id)
@@ -479,7 +484,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             OnPointerUp(e);
 
-            _inputType = InputType.NONE;
+            _inputType = (PointerType)(-1);
             _inputDeviceId = -1;
 
             e.TouchDevice?.Capture(null);
@@ -512,7 +517,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.NONE)
+            if (_inputType != (PointerType)(-1))
                 return;
 
             if (_inputDeviceId != -1)
@@ -527,7 +532,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             // Capture the stylus so all stylus input is routed to this control.
             e.StylusDevice?.Capture(sender as UIElement, CaptureMode.SubTree);
 
-            _inputType = InputType.STYLUS;
+            _inputType = PointerType.PEN;
             _inputDeviceId = e.StylusDevice.Id;
 
             OnPointerDown(e);
@@ -541,7 +546,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.STYLUS)
+            if (_inputType != PointerType.PEN)
                 return;
 
             if (_inputDeviceId != e.StylusDevice.Id)
@@ -564,7 +569,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.STYLUS)
+            if (_inputType != PointerType.PEN)
                 return;
 
             if ( (e.StylusDevice.TabletDevice != null) && (e.StylusDevice.TabletDevice.Type != TabletDeviceType.Stylus) )
@@ -572,7 +577,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             OnPointerUp(e);
 
-            _inputType = InputType.NONE;
+            _inputType = (PointerType)(-1);
             _inputDeviceId = -1;
 
             e.StylusDevice?.Capture(null);
@@ -590,7 +595,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             {
                 // Cancel the sampling if the event is sent by a long press with a stylus
                 _editor.PointerCancel((int)(_inputType));
-                _inputType = InputType.NONE;
+                _inputType = (PointerType)(-1);
                 _inputDeviceId = -1;
             }
         }
@@ -601,7 +606,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.NONE)
+            if (_inputType != (PointerType)(-1))
                 return;
 
             if (_inputDeviceId != -1)
@@ -613,7 +618,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             // Capture the mouse so all mouse input is routed to this control.
             e.MouseDevice?.Capture(sender as UIElement, CaptureMode.SubTree);
 
-            _inputType = InputType.MOUSE;
+            _inputType = PointerType.MOUSE;
             _inputDeviceId = -1;
 
             OnPointerDown(e);
@@ -627,7 +632,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.MOUSE)
+            if (_inputType != PointerType.MOUSE)
                 return;
 
             if (_inputDeviceId != -1)
@@ -647,7 +652,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if (!HasPart())
                 return;
 
-            if (_inputType != InputType.MOUSE)
+            if (_inputType != PointerType.MOUSE)
                 return;
 
             if (_inputDeviceId != -1)
@@ -658,7 +663,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             OnPointerUp(e);
 
-            _inputType = InputType.NONE;
+            _inputType = (PointerType)(-1);
             _inputDeviceId = -1;
 
             e.MouseDevice?.Capture(null);

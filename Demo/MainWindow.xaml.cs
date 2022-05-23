@@ -106,8 +106,9 @@ namespace MyScript.IInk.Demo
             UcEditor.Initialize(this);
             UcEditor.SmartGuide.MoreClicked += ShowSmartGuideMenu;
 
-            // Force pointer to be a pen, for an automatic detection, set InputMode to AUTO
-            SetInputMode(InputMode.PEN);
+            // Set default tool/mode
+            SetInputTool(PointerTool.PEN);
+            ActivePen_Click(ActivePen, null);
 
             NewFile();
         }
@@ -921,12 +922,15 @@ namespace MyScript.IInk.Demo
             }
         }
 
-        private void SetInputMode(InputMode inputMode)
+        private void SetInputTool(PointerTool pointerTool)
         {
-            UcEditor.InputMode = inputMode;
-            Auto.IsChecked = (inputMode == InputMode.AUTO);
-            Touch.IsChecked = (inputMode == InputMode.TOUCH);
-            Pen.IsChecked = (inputMode == InputMode.PEN);
+            UcEditor.SetInputTool(pointerTool);
+
+            Pen.IsChecked         = (pointerTool == PointerTool.PEN);
+            Hand.IsChecked        = (pointerTool == PointerTool.HAND);
+            Eraser.IsChecked      = (pointerTool == PointerTool.ERASER);
+            Selector.IsChecked    = (pointerTool == PointerTool.SELECTOR);
+            Highlighter.IsChecked = (pointerTool == PointerTool.HIGHLIGHTER);
         }
 
         private void Pen_Click(object sender, RoutedEventArgs e)
@@ -935,28 +939,67 @@ namespace MyScript.IInk.Demo
 
             if ((bool)toggleButton.IsChecked)
             {
-                SetInputMode(InputMode.PEN);
+                SetInputTool(PointerTool.PEN);
             }
         }
 
-        private void Touch_Click(object sender, RoutedEventArgs e)
+        private void Hand_Click(object sender, RoutedEventArgs e)
         {
             ToggleButton toggleButton = sender as ToggleButton;
 
             if ((bool)toggleButton.IsChecked)
             {
-                SetInputMode(InputMode.TOUCH);
+                SetInputTool(PointerTool.HAND);
             }
         }
 
-        private void Auto_Click(object sender, RoutedEventArgs e)
+        private void Eraser_Click(object sender, RoutedEventArgs e)
         {
             ToggleButton toggleButton = sender as ToggleButton;
 
             if ((bool)toggleButton.IsChecked)
             {
-                SetInputMode(InputMode.AUTO);
+                SetInputTool(PointerTool.ERASER);
             }
+        }
+
+        private void Selector_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleButton toggleButton = sender as ToggleButton;
+
+            if ((bool)toggleButton.IsChecked)
+            {
+                SetInputTool(PointerTool.SELECTOR);
+            }
+        }
+
+        private void Highlighter_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleButton toggleButton = sender as ToggleButton;
+
+            if ((bool)toggleButton.IsChecked)
+            {
+                SetInputTool(PointerTool.HIGHLIGHTER);
+            }
+        }
+
+        private void ActivePen_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = sender as CheckBox;
+            bool enabled = (bool)checkBox.IsChecked;
+            if (enabled)
+            {
+                if ((bool)Hand.IsChecked)
+                    SetInputTool(PointerTool.PEN);
+                Hand.IsEnabled = false;
+                Hand.Foreground = System.Windows.Media.Brushes.Gray;
+            }
+            else
+            {
+                Hand.IsEnabled = true;
+                Hand.Foreground = System.Windows.Media.Brushes.Black;
+            }
+            UcEditor.SetActivePen(enabled);
         }
 
         private void More_Open(object sender, EventArgs e)

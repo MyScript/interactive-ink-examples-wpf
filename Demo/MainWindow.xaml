@@ -125,16 +125,32 @@
                             <TextBlock Text="Pen" FontWeight="DemiBold" />
                         </ToggleButton.Content>
                     </ToggleButton>
-                    <ToggleButton x:Name="Touch" Style="{StaticResource CustomToggleButton}" Click="Touch_Click" Grid.Column="1">
+                    <ToggleButton x:Name="Hand" Style="{StaticResource CustomToggleButton}" Click="Hand_Click" Grid.Column="1">
                         <ToggleButton.Content>
-                            <TextBlock Text="Touch" FontWeight="DemiBold" />
+                            <TextBlock Text="Hand" FontWeight="DemiBold" />
                         </ToggleButton.Content>
                     </ToggleButton>
-                    <ToggleButton x:Name="Auto" Style="{StaticResource CustomToggleButton}" Click="Auto_Click" Grid.Column="2">
+                    <ToggleButton x:Name="Eraser" Style="{StaticResource CustomToggleButton}" Click="Eraser_Click" Grid.Column="2">
                         <ToggleButton.Content>
-                            <TextBlock Text="Auto" FontWeight="DemiBold" />
+                            <TextBlock Text="Eraser" FontWeight="DemiBold" />
                         </ToggleButton.Content>
                     </ToggleButton>
+                    <ToggleButton x:Name="Selector" Style="{StaticResource CustomToggleButton}" Click="Selector_Click" Grid.Column="3">
+                        <ToggleButton.Content>
+                            <TextBlock Text="Selector" FontWeight="DemiBold" />
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    <ToggleButton x:Name="Highlighter" Style="{StaticResource CustomToggleButton}" Click="Highlighter_Click" Grid.Column="4">
+                        <ToggleButton.Content>
+                            <TextBlock Text="Highlighter" FontWeight="DemiBold" />
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Grid.Column="5"/>
+                    <CheckBox x:Name="ActivePen" VerticalAlignment="Center" Click="ActivePen_Click" IsChecked="True" Grid.Column="6">
+                        <CheckBox.Content>
+                            <TextBlock Text="Active Pen" FontWeight="DemiBold" />
+                        </CheckBox.Content>
+                    </CheckBox>
                 </StackPanel>
             </Grid>
         </Border>

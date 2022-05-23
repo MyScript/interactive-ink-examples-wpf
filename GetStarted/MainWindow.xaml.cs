@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls.Primitives;
+using System.Windows.Controls;
 using MyScript.IInk.UIReferenceImplementation;
 
 namespace MyScript.IInk.GetStarted
@@ -73,8 +73,9 @@ namespace MyScript.IInk.GetStarted
             UcEditor.Engine = _engine;
             UcEditor.Initialize(this);
 
-            // Force pointer to be a pen, for an automatic detection, set InputMode to AUTO
-            SetInputMode(InputMode.PEN);
+            // Set default tool/mode
+            UcEditor.SetInputTool(PointerTool.PEN);
+            ActivePen_Click(ActivePen, null);
 
             NewFile();
          }
@@ -156,42 +157,11 @@ namespace MyScript.IInk.GetStarted
             return name;
         }
 
-        private void SetInputMode(InputMode inputMode)
+        private void ActivePen_Click(object sender, RoutedEventArgs e)
         {
-            UcEditor.InputMode = inputMode;
-            Auto.IsChecked = (inputMode == InputMode.AUTO);
-            Touch.IsChecked = (inputMode == InputMode.TOUCH);
-            Pen.IsChecked = (inputMode == InputMode.PEN);
-        }
-
-        private void Pen_Click(object sender, RoutedEventArgs e)
-        {
-            ToggleButton toggleButton = sender as ToggleButton;
-
-            if ((bool)toggleButton.IsChecked)
-            {
-                SetInputMode(InputMode.PEN);
-            }
-        }
-
-        private void Touch_Click(object sender, RoutedEventArgs e)
-        {
-            ToggleButton toggleButton = sender as ToggleButton;
-
-            if ((bool)toggleButton.IsChecked)
-            {
-                SetInputMode(InputMode.TOUCH);
-            }
-        }
-
-        private void Auto_Click(object sender, RoutedEventArgs e)
-        {
-            ToggleButton toggleButton = sender as ToggleButton;
-
-            if ((bool)toggleButton.IsChecked)
-            {
-                SetInputMode(InputMode.AUTO);
-            }
+            CheckBox checkBox = sender as CheckBox;
+            bool enabled = (bool)checkBox.IsChecked;
+            UcEditor.SetActivePen(enabled);
         }
     }
 }
