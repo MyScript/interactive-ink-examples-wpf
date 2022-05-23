@@ -1,6 +1,7 @@
 // Copyright @ MyScript. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -560,12 +561,12 @@ namespace MyScript.IInk.Demo
                 MenuItem addItem = new MenuItem { Header = "Add..." };
                 for (int i = 0; i < supportedTypes.Count(); ++i)
                 {
-                    if (supportedTypes[i] != "Image") // Not supported in this demo
-                    {
-                        MenuItem addBlockItem = new MenuItem { Header = "Add " + supportedTypes[i], Tag = supportedTypes[i] };
+                    MenuItem addBlockItem = new MenuItem { Header = "Add " + supportedTypes[i], Tag = supportedTypes[i] };
+                    if (supportedTypes[i] == "Image")
+                        addBlockItem.Click += AddImage;
+                    else
                         addBlockItem.Click += AddBlock;
-                        addItem.Items.Add(addBlockItem);
-                    }
+                    addItem.Items.Add(addBlockItem);
                 }
                 if (!addItem.Items.IsEmpty)
                     contextMenu.Items.Add(addItem);
@@ -827,6 +828,63 @@ namespace MyScript.IInk.Demo
             }
         }
 
+        private void AddImage(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Format filter as "name|*extension1;*extension2;..."
+                MimeType[] mimeTypes = { MimeType.JPEG, MimeType.PNG, MimeType.GIF };
+                List<string[]> extensionTypes = new List<string[]>(3);
+                foreach (MimeType mimeType in mimeTypes)
+                {
+                    var extensions = MimeTypeF.GetFileExtensions(mimeType).Split(',');
+                    extensionTypes.Add(extensions);
+                }
+                string filter = "Image|";
+                foreach (var extensionList in extensionTypes)
+                {
+                    foreach (string extension in extensionList)
+                        filter += "*" + extension + ";";
+                }
+                filter = filter.Remove(filter.Length - 1);
+
+                // Show open image dialog
+                var dialog = new Microsoft.Win32.OpenFileDialog();
+                dialog.Title = "Please select an image file";
+                dialog.Filter = filter;
+
+                bool? result = dialog.ShowDialog();
+                if (result == true)
+                {
+                    string fileName = dialog.FileName;
+                    string fileExtension = Path.GetExtension(fileName);
+
+                    // Find mime type from file extension
+                    MimeType mimeType = (MimeType)(-1);
+                    for (int i = 0; i < extensionTypes.Count && mimeType == (MimeType)(-1); ++i)
+                    {
+                        var extensionType = extensionTypes[i];
+                        foreach (var extension in extensionType)
+                        {
+                            if (fileExtension.Equals(extension, StringComparison.OrdinalIgnoreCase))
+                            {
+                                mimeType = mimeTypes[i];
+                                break;
+                            }
+                        }
+                    }
+                    if (mimeType == (MimeType)(-1))
+                        throw new Exception("AddImage: error identifying mime type from file extension");
+
+                    _editor.AddImage(_lastPointerPosition.X, _lastPointerPosition.Y, fileName, mimeType);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void Remove(object sender, RoutedEventArgs e)
         {
             try
@@ -942,7 +1000,7 @@ namespace MyScript.IInk.Demo
 
                 for (int i = 0; i < mimeTypes.Count(); ++i)
                 {
-                    // format filter as "name|extension1;extension2;...;extensionX"
+                    // format filter as "name|*extension1;*extension2;..."
                     var extensions = MimeTypeF.GetFileExtensions(mimeTypes[i]).Split(',');
                     string filter = MimeTypeF.GetName(mimeTypes[i]) + "|";
 
