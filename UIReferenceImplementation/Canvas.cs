@@ -21,7 +21,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                 Transform = transform;
             }
         };
-        
+
         private System.Windows.Media.DrawingContext _drawingContext = null;
         private IRenderTarget _target;
         private ImageLoader _imageLoader;
@@ -217,7 +217,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             {
                 _activeGroup = _groups[id];
                 _groups.Remove(id);
-                
+
                 // Pop clipping rect
                 _drawingContext.Pop();
             }

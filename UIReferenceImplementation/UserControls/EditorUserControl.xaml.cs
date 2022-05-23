@@ -242,7 +242,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if ((layers & LayerType.CAPTURE) != 0)
                 captureLayer.Update();
         }
-        
+
         /// <summary>Force inks layer to be redrawn</summary>
         public void Invalidate(Renderer renderer, int x, int y, int width, int height, LayerType layers)
         {

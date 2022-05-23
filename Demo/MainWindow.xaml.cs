@@ -352,7 +352,7 @@ namespace MyScript.IInk.Demo
 
                 dlg.FileName = "Interactive Ink Document"; // Default file name
                 dlg.DefaultExt = ".iink"; // Default file extension
-                dlg.Filter = ".iink|*.iink"; // Filter files by extension      
+                dlg.Filter = ".iink|*.iink"; // Filter files by extension
 
                 bool? result = dlg.ShowDialog();
 
@@ -409,7 +409,7 @@ namespace MyScript.IInk.Demo
                 Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
                 dlg.DefaultExt = ".iink"; // Default file extension
-                dlg.Filter = ".iink|*.iink"; // Filter files by extension      
+                dlg.Filter = ".iink|*.iink"; // Filter files by extension
 
                 Nullable<bool> result = dlg.ShowDialog();
 
@@ -460,7 +460,7 @@ namespace MyScript.IInk.Demo
             {
                 bool cancelable = _editor.Part != null;
                 TypeOfContentDialog.ShowHandlerDialog(_engine.SupportedPartTypes, true, cancelable);
-            }           
+            }
         }
 
         private void NewPart()
@@ -468,7 +468,7 @@ namespace MyScript.IInk.Demo
             if (_engine.SupportedPartTypes.Length > 0)
             {
                 TypeOfContentDialog.ShowHandlerDialog(_engine.SupportedPartTypes, false, true);
-            }           
+            }
         }
 
         private string MakeUntitledFilename()
@@ -681,7 +681,7 @@ namespace MyScript.IInk.Demo
               var blockType = ((MenuItem)(sender)).Tag.ToString();
               var mimeTypes = _editor.GetSupportedAddBlockDataMimeTypes(blockType);
               var useDialog = (mimeTypes != null) && (mimeTypes.Count() > 0);
-                
+
               if (!useDialog)
               {
                   _editor.AddBlock(_lastPointerPosition.X, _lastPointerPosition.Y, blockType);
@@ -827,7 +827,7 @@ namespace MyScript.IInk.Demo
                     {
                         if (j > 0)
                             filter += ";";
-    
+
                         filter += "*" + extensions[j];
                     }
 
@@ -836,14 +836,14 @@ namespace MyScript.IInk.Demo
 
                     filterList += filter;
                 }
-  
+
                 // Show save dialog
                 {
                     Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
 
                     dlg.FileName = "Interactive Ink Document"; // Default file name
                     dlg.DefaultExt = System.String.Empty; // Default file extension
-                    dlg.Filter = filterList; // Filter files by extension      
+                    dlg.Filter = filterList; // Filter files by extension
 
                     bool? result = dlg.ShowDialog();
 
@@ -892,7 +892,7 @@ namespace MyScript.IInk.Demo
             try
             {
                 MimeType[] mimeTypes = null;
-                
+
                 if (_lastSelectedBlock != null)
                     mimeTypes = _editor.GetSupportedExportMimeTypes(_lastSelectedBlock);
 

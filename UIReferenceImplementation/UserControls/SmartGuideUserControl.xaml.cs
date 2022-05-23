@@ -893,7 +893,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                 var contextMenu = new ContextMenu();
                 contextMenu.Tag = (object)wordIndex;
- 
+
                 foreach (var candidate in word.Candidates)
                 {
                     MenuItem item = new MenuItem();

@@ -12,13 +12,13 @@
     <StackPanel Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <TextBlock Text="Choose a mime type" Margin="0,0,0,0" />
         <ComboBox x:Name="MimeTypeComboBox" Margin="0,5,0,5" IsEditable="True" IsReadOnly="True" Style="{x:Null}" />
-        <TextBlock Text="Enter some text" Margin="0,5,0,0" />  
+        <TextBlock Text="Enter some text" Margin="0,5,0,0" />
         <TextBox x:Name="ResultTextBox" Margin="0,5,0,5" Height="150"
             TextAlignment="Left" TextWrapping="Wrap" AcceptsReturn="True"
             ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Auto" />
         <Grid Margin="0,5,0,0" VerticalAlignment="Bottom">
           <CheckBox x:Name="WrappingCheckBox" Grid.Row="0" Grid.Column="0" Content="Wrapping"
-              HorizontalAlignment="Left" VerticalAlignment="Center" 
+              HorizontalAlignment="Left" VerticalAlignment="Center"
               Checked="WrappingCheckBox_Toggle" Unchecked="WrappingCheckBox_Toggle"/>
           <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
               <Button IsDefault="False" MinWidth="60" Content="OK" Margin="0,0,5,0" Click="OK_Click" />

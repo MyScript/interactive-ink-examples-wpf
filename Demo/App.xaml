@@ -27,9 +27,9 @@
                     <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="2"
               Background="Transparent"
               BorderThickness="1" />
-                    <Border 
+                    <Border
               Grid.Column="0"
-              CornerRadius="2,0,0,2" 
+              CornerRadius="2,0,0,2"
               Background="Transparent"
               BorderThickness="0,0,1,0" />
                     <Font:ImageAwesome Width="10" Icon="CaretDown" Foreground="Black" ></Font:ImageAwesome>
@@ -46,46 +46,46 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
                         <Grid>
-                            <ToggleButton 
-                             Name="ToggleButton" 
-                             Template="{StaticResource ComboBoxToggleButton}" 
-                             Grid.Column="2" 
+                            <ToggleButton
+                             Name="ToggleButton"
+                             Template="{StaticResource ComboBoxToggleButton}"
+                             Grid.Column="2"
                              Focusable="false"
                              IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
-                             ClickMode="Press">     
+                             ClickMode="Press">
                             </ToggleButton>
                             <ContentPresenter
                             Name="ContentSite"
-                            IsHitTestVisible="False" 
+                            IsHitTestVisible="False"
                             Margin="3,3,50,3"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Left" />
                             <TextBox x:Name="PART_EditableTextBox"
-                             Style="{x:Null}" 
-                             Template="{StaticResource ComboBoxTextBox}" 
-                             HorizontalAlignment="Left" 
-                             VerticalAlignment="Center" 
+                             Style="{x:Null}"
+                             Template="{StaticResource ComboBoxTextBox}"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Center"
                              Margin="3,3,23,3"
-                             Focusable="True" 
+                             Focusable="True"
                              Background="Transparent"
                              Visibility="Hidden"
                              IsReadOnly="{TemplateBinding IsReadOnly}"/>
-                            <Popup  
+                            <Popup
                             Name="Popup"
                             Placement="Bottom"
                             IsOpen="{TemplateBinding IsDropDownOpen}"
-                            AllowsTransparency="True" 
+                            AllowsTransparency="True"
                             Focusable="False"
-                            PopupAnimation="Slide"> 
+                            PopupAnimation="Slide">
                                 <Grid
                                   Name="DropDown"
-                                  SnapsToDevicePixels="True"                
+                                  SnapsToDevicePixels="True"
                                   MinWidth="{TemplateBinding ActualWidth}"
                                   MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                    <Border 
+                                    <Border
                                     x:Name="DropDownBorder"
                                     Background="{StaticResource WindowBackgroundBrush}"
-                                    BorderThickness="1"/>           
+                                    BorderThickness="1"/>
                                     <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
                                         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                     </ScrollViewer>

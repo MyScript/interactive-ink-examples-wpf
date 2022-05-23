@@ -35,7 +35,7 @@ namespace MyScript.IInk.Demo
 
             Close.IsEnabled = _cancelable;
             Close.Visibility = _cancelable ? Visibility.Visible : Visibility.Hidden;
-      
+
             List<Button> buttons = new List<Button>();
 
             if (Types.Children.Count == 0)

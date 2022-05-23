@@ -36,7 +36,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             if ((_image != null) && !string.IsNullOrWhiteSpace(path))
             {
                 BitmapEncoder encoder = null;
-                
+
                 var pos = path.LastIndexOf('.');
 
                 if (pos >= 0)
