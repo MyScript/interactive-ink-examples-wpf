@@ -2,8 +2,8 @@
 
 using MyScript.IInk.Graphics;
 using System;
-using System.Collections.Generic;
 using System.Windows;
+using System.Collections.Generic;
 
 
 namespace MyScript.IInk.UIReferenceImplementation
@@ -30,12 +30,16 @@ namespace MyScript.IInk.UIReferenceImplementation
         private System.Windows.Media.Pen _stroke;
         private System.Windows.Media.SolidColorBrush _strokeColor;
         private System.Windows.Media.SolidColorBrush _fillColor;
+        private System.Windows.Media.FillRule _fillRule;
         private System.Windows.Media.FontFamily _fontFamily;
         private FontWeight _fontWeight;
         private FontStretch _fontStretch;
         private FontStyle _fontStyle;
         private double _fontSize;
-        private System.Windows.Media.FillRule _fillRule;
+        private float _dropShadow_xOffset;
+        private float _dropShadow_yOffset;
+        private float _dropShadow_radius;
+        private System.Windows.Media.SolidColorBrush _dropShadow_color;
 
         private Dictionary<string, Group> _groups;
         private Group _activeGroup;
@@ -56,6 +60,11 @@ namespace MyScript.IInk.UIReferenceImplementation
             _fontStyle = FontStyles.Normal;
             _fontWeight = FontWeights.Normal;
             _fontStretch = FontStretches.Normal;
+
+            _dropShadow_xOffset = 0.5f;
+            _dropShadow_yOffset = 0.5f;
+            _dropShadow_radius = 2.0f;
+            _dropShadow_color = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0, 0, 0, 0));
 
             _groups = new Dictionary<string, Group>();
             _activeGroup = new Group(Rect.Empty, new Transform());
@@ -166,6 +175,14 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
+        public void SetDropShadow(float xOffset, float yOffset, float radius, Color color)
+        {
+            _dropShadow_xOffset = xOffset;
+            _dropShadow_yOffset = yOffset;
+            _dropShadow_radius = radius;
+            _dropShadow_color = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb((byte)color.A, (byte)color.R, (byte)color.G, (byte)color.B));
+        }
+
         public void SetFontProperties(string family, float lineHeight, float size, string style, string variant, int weight)
         {
             _fontFamily = new System.Windows.Media.FontFamily(FontMetricsProvider.toPlatformFontFamily(family, style));
@@ -246,15 +263,30 @@ namespace MyScript.IInk.UIReferenceImplementation
             _drawingContext.Pop();
         }
 
+        /// <summary>Clear canvas with color according to region</summary>
+        public void Clear(float x, float y, float width, float height, Color color)
+        {
+            var color_ = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb((byte)color.A, (byte)color.R, (byte)color.G, (byte)color.B));
+            var rect = new Rect(x, y, width, height);
+
+            PushRenderStates();
+            _drawingContext.DrawRectangle(color_, null, rect);
+            PopRenderStates();
+        }
+
         /// <summary>Draw Path to canvas according path</summary>
         public void DrawPath(IPath path)
         {
+            var p = (RenderPath)path;
+
+            if (_dropShadow_color.Color.A > 0)
+                DrawShadowPath(p, _fillColor.Color.A > 0, _strokeColor.Color.A > 0);
+
             var draw = (_fillColor.Color.A > 0) || (_strokeColor.Color.A > 0);
 
             if (draw)
             {
                 PushRenderStates();
-                var p = (RenderPath)path;
                 var geometry = p.FinalizeGeometry();
 
                 if (_fillColor.Color.A > 0)
@@ -280,20 +312,12 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
         }
 
-        /// <summary>Clear canvas with color according to region</summary>
-        public void Clear(float x, float y, float width, float height, Color color)
-        {
-            var color_ = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb((byte)color.A, (byte)color.R, (byte)color.G, (byte)color.B));
-            var rect = new Rect(x, y, width, height);
-
-            PushRenderStates();
-            _drawingContext.DrawRectangle(color_, null, rect);
-            PopRenderStates();
-        }
-
         /// <summary>Draw Rectangle to canvas according to region</summary>
         public void DrawRectangle(float x, float y, float width, float height)
         {
+            if (_dropShadow_color.Color.A > 0)
+                DrawShadowRect(x, y, width, height, _fillColor.Color.A > 0, _strokeColor.Color.A > 0);
+
             var draw = (_fillColor.Color.A > 0) || (_strokeColor.Color.A > 0);
 
             if (draw)
@@ -321,6 +345,9 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             if (_strokeColor.Color.A > 0)
             {
+                if (_dropShadow_color.Color.A > 0)
+                    DrawShadowLine(x1, y1, x2, y2);
+
                 PushRenderStates();
                 _drawingContext.DrawLine(_stroke.Clone(), new System.Windows.Point(x1, y1), new System.Windows.Point(x2, y2));
                 PopRenderStates();
@@ -337,6 +364,9 @@ namespace MyScript.IInk.UIReferenceImplementation
             var br = transform.Apply(x + width, y + height);
             var screenMin = new Graphics.Point(Math.Min(tl.X, br.X), Math.Min(tl.Y, br.Y));
             var screenMax = new Graphics.Point(Math.Max(tl.X, br.X), Math.Max(tl.Y, br.Y));
+
+            if (_dropShadow_color.Color.A > 0)
+                DrawShadowRect(x, y, width, height, _fillColor.Color.A > 0, _strokeColor.Color.A > 0);
 
             var image = _imageLoader.getImage(url, mimeType);
 
@@ -368,8 +398,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             {
                 // Create formatted text in a particular font at a particular size
                 var typeFace = new System.Windows.Media.Typeface(_fontFamily, _fontStyle, _fontWeight, _fontStretch);
-                var ft = new System.Windows.Media.FormattedText
-                                (
+                var ft = new System.Windows.Media.FormattedText(
                                     label, System.Globalization.CultureInfo.CurrentCulture,
                                     FlowDirection.LeftToRight, typeFace, _fontSize, _fillColor
                                 );
@@ -378,8 +407,13 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                 // Draw the text
                 var baseline = (float)ft.Baseline;
+                var origin = new System.Windows.Point(x, y - baseline);
+
+                if (_dropShadow_color.Color.A > 0)
+                    DrawShadowText(label, typeFace, origin);
+
                 PushRenderStates();
-                _drawingContext.DrawText(ft, new System.Windows.Point(x, y - baseline));
+                _drawingContext.DrawText(ft, origin);
                 PopRenderStates();
             }
         }
@@ -387,6 +421,86 @@ namespace MyScript.IInk.UIReferenceImplementation
         public IPath CreatePath()
         {
             return new RenderPath();
+        }
+
+        private void DrawShadowPath(RenderPath path, bool fill, bool outline)
+        {
+            PushRenderStates();
+
+            var geometry = path.FinalizeGeometry().Clone();
+            geometry.Transform = new System.Windows.Media.TranslateTransform(_dropShadow_xOffset, _dropShadow_yOffset);
+
+            if (fill)
+            {
+                geometry.FillRule = _fillRule;
+                _drawingContext.DrawGeometry(_dropShadow_color, null, geometry);
+            }
+
+            if (outline)
+            {
+                foreach (var figure in geometry.Figures)
+                {
+                    foreach (var segment in figure.Segments)
+                    {
+                        segment.IsStroked = true;
+                    }
+                }
+                var pen = _stroke.Clone();
+                pen.Brush = _dropShadow_color;
+                _drawingContext.DrawGeometry(null, pen, geometry);
+            }
+            PopRenderStates();
+        }
+
+        private void DrawShadowRect(float x, float y, float width, float height, bool fill, bool outline)
+        {
+            PushRenderStates();
+
+            var rect = new Rect(x + _dropShadow_xOffset, y + _dropShadow_yOffset, width, height);
+
+            if (fill)
+            {
+                _drawingContext.DrawRectangle(_dropShadow_color, null, rect);
+            }
+
+            if (outline)
+            {
+                var pen = _stroke.Clone();
+                pen.Brush = _dropShadow_color;
+                _drawingContext.DrawRectangle(null, pen, rect);
+            }
+
+            PopRenderStates();
+        }
+
+        private void DrawShadowLine(float x1, float y1, float x2, float y2)
+        {
+            PushRenderStates();
+
+            var p1 = new System.Windows.Point(x1 + _dropShadow_xOffset, y1 + _dropShadow_yOffset);
+            var p2 = new System.Windows.Point(x2 + _dropShadow_xOffset, y2 + _dropShadow_yOffset);
+            var pen = _stroke.Clone();
+            pen.Brush = _dropShadow_color;
+            _drawingContext.DrawLine(pen, p1, p2);
+
+            PopRenderStates();
+        }
+
+        private void DrawShadowText(string label, System.Windows.Media.Typeface typeFace, System.Windows.Point origin)
+        {
+            PushRenderStates();
+
+            // Create formatted text in a particular font at a particular size
+            var ft = new System.Windows.Media.FormattedText(
+                                label, System.Globalization.CultureInfo.CurrentCulture,
+                                FlowDirection.LeftToRight, typeFace, _fontSize, _dropShadow_color
+                            );
+            ft.TextAlignment = TextAlignment.Left;
+
+            var p = new System.Windows.Point(origin.X + _dropShadow_xOffset, origin.Y + _dropShadow_yOffset);
+            _drawingContext.DrawText(ft, p);
+
+            PopRenderStates();
         }
     }
 }
