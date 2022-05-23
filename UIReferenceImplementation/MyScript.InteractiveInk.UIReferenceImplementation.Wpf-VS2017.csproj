@@ -50,8 +50,8 @@
   <ItemGroup>
     <Compile Include="DisplayResolution.cs" />
     <Compile Include="FontMetricsProvider.cs" />
-    <Compile Include="ImageDrawer.cs" />
     <Compile Include="ImageLoader.cs" />
+    <Compile Include="ImagePainter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Canvas.cs" />
     <Compile Include="LayerControl.cs" />

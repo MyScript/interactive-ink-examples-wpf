@@ -23,7 +23,6 @@ namespace MyScript.IInk.UIReferenceImplementation
         };
 
         private System.Windows.Media.DrawingContext _drawingContext = null;
-        private IRenderTarget _target;
         private ImageLoader _imageLoader;
 
         private Transform _transform;
@@ -44,11 +43,10 @@ namespace MyScript.IInk.UIReferenceImplementation
         private Dictionary<string, Group> _groups;
         private Group _activeGroup;
 
-        public Canvas(System.Windows.Media.DrawingContext drawingContext, IRenderTarget target, ImageLoader imageLoader)
+        public Canvas(System.Windows.Media.DrawingContext drawingContext, ImageLoader imageLoader)
         {
             _drawingContext = drawingContext;
 
-            _target = target;
             _imageLoader = imageLoader;
 
             _transform = new Transform();

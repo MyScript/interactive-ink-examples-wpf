@@ -1049,12 +1049,12 @@ namespace MyScript.IInk.Demo
 
                             try
                             {
-                                var drawer = new ImageDrawer();
+                                var imagePainter = new ImagePainter();
 
-                                drawer.ImageLoader = UcEditor.ImageLoader;
+                                imagePainter.ImageLoader = UcEditor.ImageLoader;
 
                                 _editor.WaitForIdle();
-                                _editor.Export_(contentSelection, filePath, drawer);
+                                _editor.Export_(contentSelection, filePath, imagePainter);
 
                                 System.Diagnostics.Process.Start(filePath);
                             }
@@ -1082,11 +1082,11 @@ namespace MyScript.IInk.Demo
                     // export block to a file
                     var localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                     var clipboardPath =  Path.Combine(localFolder, "MyScript", "tmp/clipboard.gvml");
-                    var drawer = new ImageDrawer();
+                    var imagePainter = new ImagePainter();
 
-                    drawer.ImageLoader = UcEditor.ImageLoader;
+                    imagePainter.ImageLoader = UcEditor.ImageLoader;
 
-                    _editor.Export_(_lastContentSelection, clipboardPath.ToString(), MimeType.OFFICE_CLIPBOARD, drawer);
+                    _editor.Export_(_lastContentSelection, clipboardPath.ToString(), MimeType.OFFICE_CLIPBOARD, imagePainter);
 
                     // read back exported data
                     var clipboardData = File.ReadAllBytes(clipboardPath);

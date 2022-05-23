@@ -1,5 +1,6 @@
 // Copyright @ MyScript. All rights reserved.
 
+using MyScript.IInk.Graphics;
 using System;
 using System.Linq;
 using System.Windows.Media;
@@ -7,21 +8,23 @@ using System.Windows.Media.Imaging;
 
 namespace MyScript.IInk.UIReferenceImplementation
 {
-    public class ImageDrawer : IImageDrawer
+    public class ImagePainter : IImagePainter
     {
         private static Graphics.Color _defaultBackgroundColor = new Graphics.Color(0xffffffff);
 
         private RenderTargetBitmap _image;
+        private DrawingVisual _drawingVisual;
+        private DrawingContext _drawingContext;
 
         public ImageLoader ImageLoader { get; set; }
         public Graphics.Color BackgroundColor { get; set; }
 
-        public ImageDrawer()
+        public ImagePainter()
         {
             BackgroundColor = _defaultBackgroundColor;
         }
 
-        public void PrepareImage(int width, int height)
+        public void PrepareImage(int width, int height, float dpi)
         {
             if (_image != null)
                 _image = null;
@@ -29,12 +32,19 @@ namespace MyScript.IInk.UIReferenceImplementation
             // Use 96 dpi to match the DIP unit used by WPF DrawingContext
             // (no conversion from DIP to pixel on _image.Render())
             _image = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Default);
+
+            _drawingVisual = new DrawingVisual();
+            _drawingContext = _drawingVisual.RenderOpen();
         }
 
         public void SaveImage(string path)
         {
             if ((_image != null) && !string.IsNullOrWhiteSpace(path))
             {
+                _drawingContext.Close();
+                _drawingContext = null;
+                _image.Render(_drawingVisual);
+
                 BitmapEncoder encoder = null;
 
                 var pos = path.LastIndexOf('.');
@@ -77,34 +87,12 @@ namespace MyScript.IInk.UIReferenceImplementation
             _image = null;
         }
 
-        public void Invalidate(Renderer renderer, LayerType layers)
+        public ICanvas CreateCanvas()
         {
-            if (_image != null && renderer != null)
-                Invalidate(renderer, 0, 0, _image.PixelWidth, _image.PixelHeight, layers);
-        }
-
-        public void Invalidate(Renderer renderer, int x, int y, int width, int height, LayerType layers)
-        {
-            if (_image != null && renderer != null)
-            {
-                DrawingVisual drawingVisual = new DrawingVisual();
-
-                using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-                {
-                    var canvas = new Canvas(drawingContext, this, ImageLoader);
-                    var color = (BackgroundColor != null) ? BackgroundColor : _defaultBackgroundColor;
-
-                    canvas.Clear(0, 0, _image.PixelWidth, _image.PixelHeight, color);
-
-                    if (layers.HasFlag(LayerType.MODEL))
-                        renderer.DrawModel(x, y, width, height, canvas);
-
-                    if (layers.HasFlag(LayerType.CAPTURE))
-                        renderer.DrawCaptureStrokes(x, y, width, height, canvas);
-                }
-
-                _image.Render(drawingVisual);
-            }
+            var canvas = new Canvas(_drawingContext, ImageLoader);
+            var color = (BackgroundColor != null) ? BackgroundColor : _defaultBackgroundColor;
+            canvas.Clear(0, 0, _image.PixelWidth, _image.PixelHeight, color);
+            return canvas;
         }
     }
 }
