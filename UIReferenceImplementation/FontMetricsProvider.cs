@@ -17,11 +17,13 @@ namespace MyScript.IInk.UIReferenceImplementation
     {
         private float dpiX;
         private float dpiY;
+        private float pixelsPerDip;
 
-        public FontMetricsProvider(float dpiX, float dpiY)
+        public FontMetricsProvider(float dpiX, float dpiY, float pixelsPerDip)
         {
             this.dpiX = dpiX;
             this.dpiY = dpiY;
+            this.pixelsPerDip = pixelsPerDip;
         }
 
         public static string toPlatformFontFamily(string family, string style)
@@ -120,7 +122,8 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var formattedChar = new FormattedText
                                     (
                                         glyphLabel, System.Globalization.CultureInfo.CurrentCulture,
-                                        FlowDirection.LeftToRight, typeFace, fontKey.FontSize, Brushes.Black
+                                        FlowDirection.LeftToRight, typeFace, fontKey.FontSize, Brushes.Black,
+                                        pixelsPerDip
                                     );
 
                 formattedChar.TextAlignment = TextAlignment.Left;
@@ -186,7 +189,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                                     (
                                         text.Label, System.Globalization.CultureInfo.CurrentCulture,
                                         FlowDirection.LeftToRight, firstFontTypeFace, firstFontKey.FontSize,
-                                        Brushes.Black
+                                        Brushes.Black, pixelsPerDip
                                     );
 
                 formattedText.TextAlignment = TextAlignment.Left;

@@ -25,7 +25,8 @@ namespace MyScript.IInk.UIReferenceImplementation
                 int width = (int)Math.Round(ActualWidth);
                 int height = (int)Math.Round(ActualHeight);
                 LayerType layerType = LayerType.LayerType_ALL;
-                Canvas canvas = new Canvas(drawingContext, ImageLoader);
+                float pixelsPerDip = (float)DisplayResolution.GetPixelsPerDip(this);
+                Canvas canvas = new Canvas(drawingContext, pixelsPerDip, ImageLoader);
 
                 if (this.Name.Equals("modelLayer"))
                     layerType = LayerType.MODEL;

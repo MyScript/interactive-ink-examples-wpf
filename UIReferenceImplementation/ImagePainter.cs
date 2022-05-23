@@ -89,7 +89,8 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public ICanvas CreateCanvas()
         {
-            var canvas = new Canvas(_drawingContext, ImageLoader);
+            float pixelsPerDip = (float)DisplayResolution.GetPixelsPerDip(_drawingVisual);
+            var canvas = new Canvas(_drawingContext, pixelsPerDip, ImageLoader);
             var color = (BackgroundColor != null) ? BackgroundColor : _defaultBackgroundColor;
             canvas.Clear(0, 0, _image.PixelWidth, _image.PixelHeight, color);
             return canvas;

@@ -24,6 +24,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         private System.Windows.Media.DrawingContext _drawingContext = null;
         private ImageLoader _imageLoader;
+        private float _pixelsPerDip;
 
         private Transform _transform;
         private System.Windows.Media.Pen _stroke;
@@ -43,9 +44,10 @@ namespace MyScript.IInk.UIReferenceImplementation
         private Dictionary<string, Group> _groups;
         private Group _activeGroup;
 
-        public Canvas(System.Windows.Media.DrawingContext drawingContext, ImageLoader imageLoader)
+        public Canvas(System.Windows.Media.DrawingContext drawingContext, float pixelsPerDip, ImageLoader imageLoader)
         {
             _drawingContext = drawingContext;
+            _pixelsPerDip = pixelsPerDip;
 
             _imageLoader = imageLoader;
 
@@ -398,7 +400,8 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var typeFace = new System.Windows.Media.Typeface(_fontFamily, _fontStyle, _fontWeight, _fontStretch);
                 var ft = new System.Windows.Media.FormattedText(
                                     label, System.Globalization.CultureInfo.CurrentCulture,
-                                    FlowDirection.LeftToRight, typeFace, _fontSize, _fillColor
+                                    FlowDirection.LeftToRight, typeFace, _fontSize, _fillColor,
+                                    _pixelsPerDip
                                 );
 
                 ft.TextAlignment = TextAlignment.Left;
@@ -491,7 +494,8 @@ namespace MyScript.IInk.UIReferenceImplementation
             // Create formatted text in a particular font at a particular size
             var ft = new System.Windows.Media.FormattedText(
                                 label, System.Globalization.CultureInfo.CurrentCulture,
-                                FlowDirection.LeftToRight, typeFace, _fontSize, _dropShadow_color
+                                FlowDirection.LeftToRight, typeFace, _fontSize, _dropShadow_color,
+                                _pixelsPerDip
                             );
             ft.TextAlignment = TextAlignment.Left;
 

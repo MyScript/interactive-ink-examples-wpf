@@ -202,11 +202,12 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void Initialize(Window window)
         {
-            Vector rawDPI = DisplayResolution.GetDpi(window, true);
-            Vector effectiveDPI = DisplayResolution.GetDpi(window, false);
-            float dpiX = (float)effectiveDPI.X;
-            float dpiY = (float)effectiveDPI.Y;
-            _pixelDensity = (float)rawDPI.Y / dpiY;
+            float pixelsPerDip = (float)DisplayResolution.GetPixelsPerDip(window);
+            Vector rawDpi = DisplayResolution.GetRawDpi(window);
+            Vector effectiveDpi = DisplayResolution.GetEffectiveDpi(window);
+            float dpiX = (float)effectiveDpi.X;
+            float dpiY = (float)effectiveDpi.Y;
+            _pixelDensity = (float)rawDpi.Y / dpiY;
 
             _renderer = _engine.CreateRenderer(dpiX, dpiY, this);
             _renderer.AddListener(new RendererListener(this));
@@ -218,7 +219,7 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             _editor = _engine.CreateEditor(Renderer, ToolController);
             _editor.SetViewSize((int)Math.Round(captureLayer.ActualWidth), (int)Math.Round(captureLayer.ActualHeight));
-            _editor.SetFontMetricsProvider(new FontMetricsProvider(dpiX, dpiY));
+            _editor.SetFontMetricsProvider(new FontMetricsProvider(dpiX, dpiY, pixelsPerDip));
             _editor.AddListener(new EditorListener(this));
 
             smartGuide.Editor = _editor;

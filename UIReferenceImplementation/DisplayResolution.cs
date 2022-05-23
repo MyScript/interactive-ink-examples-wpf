@@ -10,12 +10,43 @@ namespace MyScript.IInk.UIReferenceImplementation
 {
     public class DisplayResolution
     {
-        public static Vector GetDpi(Window window, Boolean rawDPI)
+        /// <summary>
+        /// Returns the number of physical pixels for one device-independant pixel of the given `Visual`.
+        /// </summary>
+        /// <param name="visual">The viusal on which to request the value.</param>
+        public static double GetPixelsPerDip(Visual visual)
+        {
+            var dpiScale = System.Windows.Media.VisualTreeHelper.GetDpi(visual);
+            return dpiScale.PixelsPerDip;
+        }
+
+        /// <summary>
+        /// Returns the raw scaling of the given screen.
+        /// </summary>
+        public static Vector GetRawDpi(Window window)
+        {
+            return GetDpi(window, true);
+        }
+
+        /// <summary>
+        /// Returns the effective scaling of the given screen.
+        /// </summary>
+        public static Vector GetEffectiveDpi(Window window)
+        {
+            return GetDpi(window, false);
+        }
+
+        /// <summary>
+        /// Returns the scaling of the given screen.
+        /// </summary>
+        /// <param name="window">The window on which to request the values.</param>
+        /// <param name="rawDpi">When `true` requests the raw dpi of the given screen, else returns the effective dpi.</param>
+        private static Vector GetDpi(Window window, Boolean rawDpi)
         {
             IntPtr hwnd = new WindowInteropHelper(window).Handle;
             uint dpiX = 0;
             uint dpiY = 0;
-            GetDpi(hwnd, rawDPI, out dpiX, out dpiY);
+            GetDpi(hwnd, rawDpi, out dpiX, out dpiY);
 
             var source = PresentationSource.FromVisual(window);
             Matrix transform = source.CompositionTarget.TransformFromDevice;
@@ -24,17 +55,18 @@ namespace MyScript.IInk.UIReferenceImplementation
             return new Vector(dpiX * dcuPx.X, dpiY * dcuPx.Y);
         }
 
-
         /// <summary>
         /// Returns the scaling of the given screen.
         /// </summary>
+        /// <param name="hwnd">The handle of the window on which to request the values.</param>
+        /// <param name="rawDpi">When `true` requests the raw dpi of the given screen, else returns the effective dpi.</param>
         /// <param name="dpiX">Gives the horizontal scaling back (in dpi).</param>
         /// <param name="dpiY">Gives the vertical scaling back (in dpi).</param>
-        private static void GetDpi(IntPtr hwnd, Boolean rawDPI, out uint dpiX, out uint dpiY)
+        private static void GetDpi(IntPtr hwnd, Boolean rawDpi, out uint dpiX, out uint dpiY)
         {
             var hmonitor = MonitorFromWindow(hwnd, _MONITOR_DEFAULTTONEAREST);
-            var typeDPI = rawDPI ? _MDT_RAW_DPI : _MDT_EFFECTIVE_DPI;
-            var hresult_ = GetDpiForMonitor(hmonitor, typeDPI, out dpiX, out dpiY);
+            var typeDpi = rawDpi ? _MDT_RAW_DPI : _MDT_EFFECTIVE_DPI;
+            var hresult_ = GetDpiForMonitor(hmonitor, typeDpi, out dpiX, out dpiY);
 
             // When compiling for x86, the 32 bits IntPtr returned by GetDpiForMonitor can be negative
             // (for example _E_NOTSUPPORTED == 0x80070032).
