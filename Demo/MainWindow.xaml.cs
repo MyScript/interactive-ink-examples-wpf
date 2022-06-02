@@ -158,6 +158,7 @@ namespace MyScript.IInk.Demo
             EnableRawContentConversion();
 
             // Initialize the editor with the engine
+            FontMetricsProvider.Initialize();
             UcEditor.Engine = _engine;
             UcEditor.Initialize(this);
             UcEditor.SmartGuide.MoreClicked += ShowSmartGuideMenu;

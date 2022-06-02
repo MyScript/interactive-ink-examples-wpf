@@ -185,24 +185,10 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void SetFontProperties(string family, float lineHeight, float size, string style, string variant, int weight)
         {
-            _fontFamily = new System.Windows.Media.FontFamily(FontMetricsProvider.toPlatformFontFamily(family, style));
-            _fontStyle = FontStyles.Normal;
+            _fontFamily = new System.Windows.Media.FontFamily(FontMetricsProvider.ToPlatformFontFamily(family, style, weight));
+            _fontStyle = FontMetricsProvider.ToPlatformFontStyle(style);
+            _fontWeight = FontMetricsProvider.ToPlatformFontWeight(weight);
             _fontStretch = FontStretches.Normal;
-
-            if (style == "oblique")
-                _fontStyle = FontStyles.Oblique;
-            else if (style == "italic")
-                _fontStyle = FontStyles.Italic;
-            else //if (style == "normal")
-                _fontStyle = FontStyles.Normal;
-
-            if (weight >= 700)
-                _fontWeight = FontWeights.Bold;
-            else if (weight >= 400)
-                _fontWeight = FontWeights.Normal;
-            else
-                _fontWeight = FontWeights.Light;
-
             _fontSize = size;
         }
 

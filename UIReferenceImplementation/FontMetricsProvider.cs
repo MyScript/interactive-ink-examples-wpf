@@ -13,27 +13,101 @@ using System.Threading;
 
 namespace MyScript.IInk.UIReferenceImplementation
 {
+    internal static class FontFamilies
+    {
+        public static string MyScriptInter      { get { return _myScriptInter ?? _defaultFamily; }      private set { _myScriptInter = value; } }
+        public static string MyScriptInterBold  { get { return _myScriptInterBold ?? _defaultFamily; }  private set { _myScriptInterBold = value; } }
+        public static string StixRegular        { get { return _stixRegular ?? _defaultStixFamily; }    private set { _stixRegular = value; } }
+        public static string StixItalic         { get { return _stixItalic ?? _defaultStixFamily; }     private set { _stixItalic = value; } }
+
+        private const string _defaultFamily = "Segoe UI";
+        private const string _defaultStixFamily = "STIX";
+
+        private const string _fontFolder = "fonts";
+
+        private static bool _initialized = false;
+        private static string _myScriptInter;
+        private static string _myScriptInterBold;
+        private static string _stixRegular;
+        private static string _stixItalic;
+
+        private static string RegisterFontFamily(string filename, string name, string defaultFamily)
+        {
+            var localPath = System.IO.Path.Combine(_fontFolder, filename);
+            var fullPath = System.IO.Path.GetFullPath(localPath);
+
+            if (System.IO.File.Exists(fullPath))
+                return fullPath + "#" + name;
+
+            return defaultFamily;
+        }
+
+        public static void Initialize()
+        {
+            if (_initialized)
+                return;
+
+            MyScriptInter = RegisterFontFamily("MyScriptInter-Regular.otf", "MyScriptInter", _defaultFamily);
+            MyScriptInterBold = RegisterFontFamily("MyScriptInter-Bold.otf", "MyScriptInter", _defaultFamily);
+            StixRegular = RegisterFontFamily("STIXGeneral.ttf", "STIXGeneral", _defaultStixFamily);
+            StixItalic = RegisterFontFamily("STIX-Italic.otf", "STIX", _defaultStixFamily);
+
+            _initialized = true;
+        }
+    }
+
     public class FontMetricsProvider : IFontMetricsProvider
     {
-        private float dpiX;
-        private float dpiY;
-        private float pixelsPerDip;
+        private float _dpiX;
+        private float _dpiY;
+        private float _pixelsPerDip;
+
+        public static void Initialize()
+        {
+            FontFamilies.Initialize();
+        }
 
         public FontMetricsProvider(float dpiX, float dpiY, float pixelsPerDip)
         {
-            this.dpiX = dpiX;
-            this.dpiY = dpiY;
-            this.pixelsPerDip = pixelsPerDip;
+            _dpiX = dpiX;
+            _dpiY = dpiY;
+            _pixelsPerDip = pixelsPerDip;
         }
 
-        public static string toPlatformFontFamily(string family, string style)
+        public static string ToPlatformFontFamily(string family, string style, int weight)
         {
-            var family_ = family;
-            if (family_ == "sans-serif")
-                family_ = "Segoe UI";
-            else if (family_ == "STIXGeneral" && style == "italic")
-                family_ = "STIX";
-            return family_;
+            if (family == "MyScriptInter")
+                return (ToPlatformFontWeight(weight) == FontWeights.Bold) ? FontFamilies.MyScriptInterBold : FontFamilies.MyScriptInter;
+            else if (family == "STIX")
+                return (ToPlatformFontStyle(style) == FontStyles.Italic) ? FontFamilies.StixItalic : FontFamilies.StixRegular;
+
+            return family;
+        }
+
+        public static FontWeight ToPlatformFontWeight(int weight)
+        {
+            var fontWeight = FontWeight.FromOpenTypeWeight(weight);
+
+            if (weight >= 700)
+                fontWeight = FontWeights.Bold;
+            else if (weight >= 400)
+                fontWeight = FontWeights.Normal;
+            else
+                fontWeight = FontWeights.Light;
+
+            return fontWeight;
+        }
+
+        public static FontStyle ToPlatformFontStyle(string style)
+        {
+            var fontStyle = FontStyles.Normal;
+
+            if (style.Equals("italic"))
+                fontStyle = FontStyles.Italic;
+            else if (style.Equals("oblique"))
+                fontStyle = FontStyles.Oblique;
+
+            return fontStyle;
         }
 
         private static float px2mm(float px, float dpi)
@@ -85,24 +159,11 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         private FontKey FontKeyFromStyle(MyScript.IInk.Graphics.Style style)
         {
-            var fontFamily = new FontFamily(toPlatformFontFamily(style.FontFamily, style.FontStyle));
-            var fontSize = mm2px(style.FontSize, dpiY);
-            var fontWeight = FontWeight.FromOpenTypeWeight(style.FontWeight);
+            var fontFamily = new FontFamily(ToPlatformFontFamily(style.FontFamily, style.FontStyle, style.FontWeight));
+            var fontSize = mm2px(style.FontSize, _dpiY);
+            var fontWeight = ToPlatformFontWeight(style.FontWeight);
             var fontStretch = FontStretches.Normal;
-            var fontStyle = FontStyles.Normal;
-
-            if (style.FontStyle.Equals("italic"))
-                fontStyle =  FontStyles.Italic;
-            else if (style.FontStyle.Equals("oblique"))
-                fontStyle =  FontStyles.Oblique;
-
-            if (style.FontWeight >= 700)
-                fontWeight = FontWeights.Bold;
-            else if (style.FontWeight >= 400)
-                fontWeight = FontWeights.Normal;
-            else
-                fontWeight = FontWeights.Light;
-
+            var fontStyle = ToPlatformFontStyle(style.FontStyle);
             return new FontKey(fontFamily, fontSize, fontWeight, fontStretch, fontStyle);
         }
 
@@ -123,7 +184,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                                     (
                                         glyphLabel, System.Globalization.CultureInfo.CurrentCulture,
                                         FlowDirection.LeftToRight, typeFace, fontKey.FontSize, Brushes.Black,
-                                        pixelsPerDip
+                                        _pixelsPerDip
                                     );
 
                 formattedChar.TextAlignment = TextAlignment.Left;
@@ -143,13 +204,13 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var leftBearing = -(float)(rect.X);
                 var rightBearing = 0.0f;
 
-                var glyphX = px2mm(rectX, dpiX);
-                var glyphY = px2mm(rectY, dpiY);
-                var glyphW = px2mm(rectW, dpiX);
-                var glyphH = px2mm(rectH, dpiY);
+                var glyphX = px2mm(rectX, _dpiX);
+                var glyphY = px2mm(rectY, _dpiY);
+                var glyphW = px2mm(rectW, _dpiX);
+                var glyphH = px2mm(rectH, _dpiY);
                 var glyphRect = new Rectangle(glyphX, glyphY, glyphW, glyphH);
-                var glyphLeftBearing = px2mm(leftBearing, dpiX);
-                var glyphRightBearing = px2mm(rightBearing, dpiX);
+                var glyphLeftBearing = px2mm(leftBearing, _dpiX);
+                var glyphRightBearing = px2mm(rightBearing, _dpiX);
 
                 value = new GlyphMetrics(glyphRect, glyphLeftBearing, glyphRightBearing);
                 fontCache[glyphLabel] = value;
@@ -189,7 +250,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                                     (
                                         text.Label, System.Globalization.CultureInfo.CurrentCulture,
                                         FlowDirection.LeftToRight, firstFontTypeFace, firstFontKey.FontSize,
-                                        Brushes.Black, pixelsPerDip
+                                        Brushes.Black, _pixelsPerDip
                                     );
 
                 formattedText.TextAlignment = TextAlignment.Left;
@@ -307,7 +368,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             int glyphIdx = 0;
             float glyphX = 0.0f;
-            WalkDrawingForText(drawing, glyphMetrics, ref glyphIdx, ref glyphX, baseline, dpiX, dpiY);
+            WalkDrawingForText(drawing, glyphMetrics, ref glyphIdx, ref glyphX, baseline, _dpiX, _dpiY);
         }
 
         public Rectangle[] GetCharacterBoundingBoxes(MyScript.IInk.Text.Text text, TextSpan[] spans)

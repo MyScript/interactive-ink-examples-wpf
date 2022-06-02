@@ -222,6 +222,18 @@ namespace MyScript.IInk.UIReferenceImplementation
             _editor.SetFontMetricsProvider(new FontMetricsProvider(dpiX, dpiY, pixelsPerDip));
             _editor.AddListener(new EditorListener(this));
 
+            // see https://developer.myscript.com/docs/interactive-ink/latest/reference/styling for styling reference
+            _editor.Theme =
+                "glyph {" +
+                "  font-family: MyScriptInter;" +
+                "}" +
+                ".math {" +
+                "  font-family: STIX;" +
+                "}" +
+                ".math-variable {" +
+                "  font-style: italic;" +
+                "};";
+
             smartGuide.Editor = _editor;
 
             var tempFolder = _engine.Configuration.GetString("content-package.temp-folder");
