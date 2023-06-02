@@ -632,23 +632,72 @@ namespace MyScript.IInk.Demo
 
             if (availableActions.HasFlag(AvailableActions.FORMAT_TEXT))
             {
+                var supportedFormats = _editor.GetSupportedTextFormats(contentBlock);
+
                 MenuItem formatMenuItem = new MenuItem { Header = "Format..." };
                 contextMenu.Items.Add(formatMenuItem);
 
+                if (supportedFormats.Contains(TextFormat.H1))
                 {
                     MenuItem h1Item = new MenuItem { Header = "H1" };
                     h1Item.Click += FormatH1;
                     formatMenuItem.Items.Add(h1Item);
                 }
+                if (supportedFormats.Contains(TextFormat.H2))
                 {
                     MenuItem h2Item = new MenuItem { Header = "H2" };
                     h2Item.Click += FormatH2;
                     formatMenuItem.Items.Add(h2Item);
                 }
+                if (supportedFormats.Contains(TextFormat.PARAGRAPH))
                 {
                     MenuItem pItem = new MenuItem { Header = "P" };
                     pItem.Click += FormatP;
                     formatMenuItem.Items.Add(pItem);
+                }
+                if (supportedFormats.Contains(TextFormat.LIST_BULLET))
+                {
+                    MenuItem pItem = new MenuItem { Header = "Bullet list" };
+                    pItem.Click += FormatBulletList;
+                    formatMenuItem.Items.Add(pItem);
+                }
+                if (supportedFormats.Contains(TextFormat.LIST_CHECKBOX))
+                {
+                    MenuItem pItem = new MenuItem { Header = "Checkbox list" };
+                    pItem.Click += FormatCheckboxList;
+                    formatMenuItem.Items.Add(pItem);
+                }
+                if (supportedFormats.Contains(TextFormat.LIST_NUMBERED))
+                {
+                    MenuItem pItem = new MenuItem { Header = "Numbered list" };
+                    pItem.Click += FormatNumberedList;
+                    formatMenuItem.Items.Add(pItem);
+                }
+            }
+
+            if (!_editor.IsEmpty(contentBlock))
+            {
+                IndentationLevels indentLevels = _editor.GetIndentationLevels(contentBlock);
+
+                bool indentable = (int)indentLevels.Low < (int)indentLevels.Max - 1;
+                bool deindentable = indentLevels.High > 0;
+
+                if (indentable || deindentable)
+                {
+                    MenuItem indentMenuItem = new MenuItem { Header = "Indentation..." };
+                    contextMenu.Items.Add(indentMenuItem);
+                    if (indentable)
+                    {
+                        MenuItem pItem = new MenuItem { Header = "Increase" };
+                        pItem.Click += IncreaseIndentation;
+                        indentMenuItem.Items.Add(pItem);
+                    }
+                    if (deindentable)
+                    {
+                        MenuItem pItem = new MenuItem { Header = "Decrease" };
+                        pItem.Click += DecreaseIndentation;
+                        indentMenuItem.Items.Add(pItem);
+                    }
                 }
             }
 
@@ -710,23 +759,72 @@ namespace MyScript.IInk.Demo
 
             if (availableActions.HasFlag(AvailableActions.FORMAT_TEXT))
             {
+                var supportedFormats = _editor.GetSupportedTextFormats(contentSelection);
+
                 MenuItem formatMenuItem = new MenuItem { Header = "Format..." };
                 contextMenu.Items.Add(formatMenuItem);
 
+                if (supportedFormats.Contains(TextFormat.H1))
                 {
                     MenuItem h1Item = new MenuItem { Header = "H1" };
                     h1Item.Click += FormatH1;
                     formatMenuItem.Items.Add(h1Item);
                 }
+                if (supportedFormats.Contains(TextFormat.H2))
                 {
                     MenuItem h2Item = new MenuItem { Header = "H2" };
                     h2Item.Click += FormatH2;
                     formatMenuItem.Items.Add(h2Item);
                 }
+                if (supportedFormats.Contains(TextFormat.PARAGRAPH))
                 {
                     MenuItem pItem = new MenuItem { Header = "P" };
                     pItem.Click += FormatP;
                     formatMenuItem.Items.Add(pItem);
+                }
+                if (supportedFormats.Contains(TextFormat.LIST_BULLET))
+                {
+                    MenuItem pItem = new MenuItem { Header = "Bullet list" };
+                    pItem.Click += FormatBulletList;
+                    formatMenuItem.Items.Add(pItem);
+                }
+                if (supportedFormats.Contains(TextFormat.LIST_CHECKBOX))
+                {
+                    MenuItem pItem = new MenuItem { Header = "Checkbox list" };
+                    pItem.Click += FormatCheckboxList;
+                    formatMenuItem.Items.Add(pItem);
+                }
+                if (supportedFormats.Contains(TextFormat.LIST_NUMBERED))
+                {
+                    MenuItem pItem = new MenuItem { Header = "Numbered list" };
+                    pItem.Click += FormatNumberedList;
+                    formatMenuItem.Items.Add(pItem);
+                }
+            }
+
+            if (!_editor.IsEmpty(contentSelection))
+            {
+                IndentationLevels indentLevels = _editor.GetIndentationLevels(contentSelection);
+
+                bool indentable = (int)indentLevels.Low < (int)indentLevels.Max - 1;
+                bool deindentable = indentLevels.High > 0;
+
+                if (indentable || deindentable)
+                {
+                    MenuItem indentMenuItem = new MenuItem { Header = "Indentation..." };
+                    contextMenu.Items.Add(indentMenuItem);
+                    if (indentable)
+                    {
+                        MenuItem pItem = new MenuItem { Header = "Increase" };
+                        pItem.Click += IncreaseIndentation;
+                        indentMenuItem.Items.Add(pItem);
+                    }
+                    if (deindentable)
+                    {
+                        MenuItem pItem = new MenuItem { Header = "Decrease" };
+                        pItem.Click += DecreaseIndentation;
+                        indentMenuItem.Items.Add(pItem);
+                    }
                 }
             }
 
@@ -1135,6 +1233,70 @@ namespace MyScript.IInk.Demo
             {
                 if (_lastContentSelection != null)
                     _editor.SetTextFormat(_lastContentSelection, TextFormat.PARAGRAPH);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void FormatBulletList(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_lastContentSelection != null)
+                    _editor.SetTextFormat(_lastContentSelection, TextFormat.LIST_BULLET);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void FormatCheckboxList(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_lastContentSelection != null)
+                    _editor.SetTextFormat(_lastContentSelection, TextFormat.LIST_CHECKBOX);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void FormatNumberedList(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_lastContentSelection != null)
+                    _editor.SetTextFormat(_lastContentSelection, TextFormat.LIST_NUMBERED);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void IncreaseIndentation(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_lastContentSelection != null)
+                    _editor.Indent(_lastContentSelection, 1);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void DecreaseIndentation(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_lastContentSelection != null)
+                    _editor.Indent(_lastContentSelection, -1);
             }
             catch (Exception ex)
             {
