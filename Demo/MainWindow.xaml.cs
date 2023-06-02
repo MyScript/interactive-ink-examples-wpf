@@ -41,10 +41,10 @@ namespace MyScript.IInk.Demo
         private const string PenBlueColor   = "#4285F4";
 
         private const float  HighlighterMediumWidth = 5.0F;         // default (in mm)
-        private const string HighlighterYellowColor = "#FBBC0566";  // default
-        private const string HighlighterRedColor    = "#EA433566";
-        private const string HighlighterGreenColor  = "#34A85366";
-        private const string HighlighterBlueColor   = "#4285F466";
+        private const string HighlighterYellowColor = "#FBBC05";  // default
+        private const string HighlighterRedColor    = "#EA4335";
+        private const string HighlighterGreenColor  = "#34A853";
+        private const string HighlighterBlueColor   = "#4285F4";
 
         public MainWindow()
         {
