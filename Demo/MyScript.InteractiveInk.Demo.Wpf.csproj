@@ -48,9 +48,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -179,7 +177,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UIReferenceImplementation\MyScript.InteractiveInk.UIReferenceImplementation.Wpf-VS2017.csproj">
+    <ProjectReference Include="..\UIReferenceImplementation\MyScript.InteractiveInk.UIReferenceImplementation.Wpf.csproj">
       <Project>{8ed3cb31-d4b5-4b82-8c15-f6c31bbe520d}</Project>
       <Name>MyScript.InteractiveInk.UIReferenceImplementation.Wpf</Name>
     </ProjectReference>

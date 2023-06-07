@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyScript.InteractiveInk.GetStarted.Wpf-VS2017", "GetStarted\MyScript.InteractiveInk.GetStarted.Wpf-VS2017.csproj", "{5D7ED6D6-673A-4F5A-91AF-2D037563DEDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyScript.InteractiveInk.GetStarted.Wpf", "GetStarted\MyScript.InteractiveInk.GetStarted.Wpf.csproj", "{5D7ED6D6-673A-4F5A-91AF-2D037563DEDE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyScript.InteractiveInk.UIReferenceImplementation.Wpf-VS2017", "UIReferenceImplementation\MyScript.InteractiveInk.UIReferenceImplementation.Wpf-VS2017.csproj", "{8ED3CB31-D4B5-4B82-8C15-F6C31BBE520D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyScript.InteractiveInk.UIReferenceImplementation.Wpf", "UIReferenceImplementation\MyScript.InteractiveInk.UIReferenceImplementation.Wpf.csproj", "{8ED3CB31-D4B5-4B82-8C15-F6C31BBE520D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyScript.InteractiveInk.Demo.Wpf-VS2017", "Demo\MyScript.InteractiveInk.Demo.Wpf-VS2017.csproj", "{B3222351-CDD3-42A7-9AD3-36E8D6322AEC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyScript.InteractiveInk.Demo.Wpf", "Demo\MyScript.InteractiveInk.Demo.Wpf.csproj", "{B3222351-CDD3-42A7-9AD3-36E8D6322AEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
