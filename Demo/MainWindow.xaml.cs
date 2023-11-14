@@ -137,6 +137,12 @@ namespace MyScript.IInk.Demo
             _engine.Configuration.SetStringArray("raw-content.pen.gestures", gestures);
         }
 
+        private void EnableStrokePrediction(bool enable, uint durationMs = 16)
+        {
+            _engine.Configuration.SetBoolean("renderer.prediction.enable", enable);
+            _engine.Configuration.SetNumber("renderer.prediction.duration", durationMs);
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -162,6 +168,7 @@ namespace MyScript.IInk.Demo
             _engine.Configuration.SetString("content-package.temp-folder", tempFolder);
 
             EnableRawContentConversion();
+            EnableStrokePrediction(true, 16);
 
             // Initialize the editor with the engine
             FontMetricsProvider.Initialize();
