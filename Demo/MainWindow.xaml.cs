@@ -151,6 +151,10 @@ namespace MyScript.IInk.Demo
             _engine.Configuration.SetBoolean("renderer.prediction.enable", enable);
             _engine.Configuration.SetNumber("renderer.prediction.duration", durationMs);
         }
+        private void SetMaxRecognitionThreadCount(uint threadCount)
+        {
+            _engine.Configuration.SetNumber("max-recognition-thread-count", threadCount);
+        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -179,6 +183,9 @@ namespace MyScript.IInk.Demo
             EnableRawContentInteractivity();
             ConfigureDiagramInteractivity();
             EnableStrokePrediction(true, 16);
+
+            // Configure multithreading for text recognition
+            SetMaxRecognitionThreadCount(1);
 
             // Initialize the editor with the engine
             FontMetricsProvider.Initialize();
