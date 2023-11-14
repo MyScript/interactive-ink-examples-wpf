@@ -104,7 +104,7 @@ namespace MyScript.IInk.Demo
             _lastContentSelection = null;
         }
 
-        private void EnableRawContentConversion()
+        private void EnableRawContentInteractivity()
         {
             // Display grid background
             _engine.Configuration.SetString("raw-content.line-pattern", "grid");
@@ -135,8 +135,17 @@ namespace MyScript.IInk.Demo
             // Allow gesture detection
             var gestures = new string[] { "underline", "scratch-out", "strike-through" };
             _engine.Configuration.SetStringArray("raw-content.pen.gestures", gestures);
-        }
 
+            // Allow shape & image rotation
+            var rotations = new string[] { "shape", "image" };
+            _engine.Configuration.SetStringArray("raw-content.rotation", rotations);
+        }
+        private void ConfigureDiagramInteractivity()
+        {
+            // Allow shape rotation
+            var rotations = new string[] { "shape" };
+            _engine.Configuration.SetStringArray("diagram.rotation", rotations);
+        }
         private void EnableStrokePrediction(bool enable, uint durationMs = 16)
         {
             _engine.Configuration.SetBoolean("renderer.prediction.enable", enable);
@@ -167,7 +176,8 @@ namespace MyScript.IInk.Demo
             var tempFolder =  Path.Combine(localFolder, "MyScript", "tmp");
             _engine.Configuration.SetString("content-package.temp-folder", tempFolder);
 
-            EnableRawContentConversion();
+            EnableRawContentInteractivity();
+            ConfigureDiagramInteractivity();
             EnableStrokePrediction(true, 16);
 
             // Initialize the editor with the engine
