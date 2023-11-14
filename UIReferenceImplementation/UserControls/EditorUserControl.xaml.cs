@@ -2,12 +2,10 @@
 
 using MyScript.IInk.Graphics;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace MyScript.IInk.UIReferenceImplementation
 {
@@ -212,13 +210,12 @@ namespace MyScript.IInk.UIReferenceImplementation
             _renderer = _engine.CreateRenderer(dpiX, dpiY, this);
             _renderer.AddListener(new RendererListener(this));
 
-            modelLayer.Renderer = _renderer;
-            captureLayer.Renderer = _renderer;
+            renderLayer.Renderer = _renderer;
 
             _toolController = _engine.CreateToolController();
 
             _editor = _engine.CreateEditor(Renderer, ToolController);
-            _editor.SetViewSize((int)Math.Round(captureLayer.ActualWidth), (int)Math.Round(captureLayer.ActualHeight));
+            _editor.SetViewSize((int)Math.Round(renderLayer.ActualWidth), (int)Math.Round(renderLayer.ActualHeight));
             _editor.SetFontMetricsProvider(new FontMetricsProvider(dpiX, dpiY, pixelsPerDip));
             _editor.AddListener(new EditorListener(this));
 
@@ -239,8 +236,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             var tempFolder = _engine.Configuration.GetString("content-package.temp-folder");
             _loader = new ImageLoader(_editor, tempFolder);
 
-            modelLayer.ImageLoader = _loader;
-            captureLayer.ImageLoader = _loader;
+            renderLayer.ImageLoader = _loader;
 
             float verticalMarginPX = 60;
             float horizontalMarginPX = 40;
@@ -380,21 +376,15 @@ namespace MyScript.IInk.UIReferenceImplementation
         /// <summary>Force inks layer to be redrawn</summary>
         public void Invalidate(Renderer renderer, LayerType layers)
         {
-            if ((layers & LayerType.MODEL) != 0)
-                modelLayer.Update();
-            if ((layers & LayerType.CAPTURE) != 0)
-                captureLayer.Update();
+            renderLayer.Update();
         }
 
         /// <summary>Force inks layer to be redrawn</summary>
         public void Invalidate(Renderer renderer, int x, int y, int width, int height, LayerType layers)
         {
-            if (height >= 0)
+            if (width > 0 && height > 0)
             {
-                if ((layers & LayerType.MODEL) != 0)
-                    modelLayer.Update();
-                if ((layers & LayerType.CAPTURE) != 0)
-                    captureLayer.Update();
+                renderLayer.Update();
             }
         }
 
@@ -592,7 +582,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe touch event to editor</summary>
-        private void captureLayer_TouchDown(object sender, TouchEventArgs e)
+        private void renderLayer_TouchDown(object sender, TouchEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -615,7 +605,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe touch event to editor</summary>
-        private void captureLayer_TouchMove(object sender, TouchEventArgs e)
+        private void renderLayer_TouchMove(object sender, TouchEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -632,7 +622,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe touch event to editor</summary>
-        private void captureLayer_TouchUp(object sender, TouchEventArgs e)
+        private void renderLayer_TouchUp(object sender, TouchEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -673,7 +663,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe stylus event to editor</summary>
-        private void captureLayer_StylusDown(object sender, StylusDownEventArgs e)
+        private void renderLayer_StylusDown(object sender, StylusDownEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -702,7 +692,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe stylus event to editor</summary>
-        private void captureLayer_StylusMove(object sender, StylusEventArgs e)
+        private void renderLayer_StylusMove(object sender, StylusEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -725,7 +715,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe stylus event to editor</summary>
-        private void captureLayer_StylusUp(object sender, StylusEventArgs e)
+        private void renderLayer_StylusUp(object sender, StylusEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -747,7 +737,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe mouse event to editor</summary>
-        private void captureLayer_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        private void renderLayer_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -762,7 +752,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe mouse event to editor</summary>
-        private void captureLayer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void renderLayer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -788,7 +778,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe mouse event to editor</summary>
-        private void captureLayer_MouseMove(object sender, MouseEventArgs e)
+        private void renderLayer_MouseMove(object sender, MouseEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -808,7 +798,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe mouse event to editor</summary>
-        private void captureLayer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void renderLayer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (!HasPart())
                 return;
@@ -833,7 +823,7 @@ namespace MyScript.IInk.UIReferenceImplementation
         }
 
         /// <summary>Retranscribe mouse event to editor</summary>
-        private void captureLayer_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void renderLayer_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (!HasPart())
                 return;

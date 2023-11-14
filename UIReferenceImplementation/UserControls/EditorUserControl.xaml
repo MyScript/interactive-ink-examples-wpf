@@ -7,20 +7,19 @@
              mc:Ignorable="d"
              >
     <Grid>
-        <UIReferenceImplementation:LayerControl x:Name="modelLayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-        <UIReferenceImplementation:LayerControl x:Name="captureLayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        <UIReferenceImplementation:LayerControl x:Name="renderLayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                SizeChanged="Control_SizeChanged"
-                               StylusDown="captureLayer_StylusDown"
-                               StylusUp="captureLayer_StylusUp"
-                               StylusMove="captureLayer_StylusMove"
-                               TouchDown="captureLayer_TouchDown"
-                               TouchUp="captureLayer_TouchUp"
-                               TouchMove="captureLayer_TouchMove"
-                               MouseRightButtonDown="captureLayer_MouseRightButtonDown"
-                               MouseLeftButtonDown="captureLayer_MouseLeftButtonDown"
-                               MouseLeftButtonUp="captureLayer_MouseLeftButtonUp"
-                               MouseMove="captureLayer_MouseMove"
-                               MouseWheel="captureLayer_MouseWheel"
+                               StylusDown="renderLayer_StylusDown"
+                               StylusUp="renderLayer_StylusUp"
+                               StylusMove="renderLayer_StylusMove"
+                               TouchDown="renderLayer_TouchDown"
+                               TouchUp="renderLayer_TouchUp"
+                               TouchMove="renderLayer_TouchMove"
+                               MouseRightButtonDown="renderLayer_MouseRightButtonDown"
+                               MouseLeftButtonDown="renderLayer_MouseLeftButtonDown"
+                               MouseLeftButtonUp="renderLayer_MouseLeftButtonUp"
+                               MouseMove="renderLayer_MouseMove"
+                               MouseWheel="renderLayer_MouseWheel"
                                Padding="0"
                                >
             <UIReferenceImplementation:SmartGuideUserControl x:Name="smartGuide" Visibility="Hidden" />
