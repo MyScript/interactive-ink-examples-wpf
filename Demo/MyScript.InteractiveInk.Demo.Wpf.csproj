@@ -187,7 +187,7 @@
       <Version>4.7.0.9</Version>
     </PackageReference>
     <PackageReference Include="MyScript.InteractiveInk.Wpf">
-      <Version>2.1.1</Version>
+      <Version>2.3.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

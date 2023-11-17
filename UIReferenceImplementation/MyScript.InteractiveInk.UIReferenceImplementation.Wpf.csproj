@@ -79,7 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MyScript.InteractiveInk.Wpf">
-      <Version>2.1.1</Version>
+      <Version>2.3.1</Version>
     </PackageReference>
     <PackageReference Include="System.Json">
       <Version>4.7.1</Version>
