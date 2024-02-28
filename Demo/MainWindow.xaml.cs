@@ -127,6 +127,8 @@ namespace MyScript.IInk.Demo
             _engine.Configuration.SetBoolean("raw-content.eraser.erase-precisely", false);
             _engine.Configuration.SetBoolean("raw-content.eraser.dynamic-radius", true);
             _engine.Configuration.SetBoolean("raw-content.auto-connection", true);
+            var policies = new string[] { "default-with-drag" };
+            _engine.Configuration.SetStringArray("raw-content.edge.policy", policies);
 
             // Show alignment guides and snap to them
             _engine.Configuration.SetBoolean("raw-content.guides.enable", true);
