@@ -49,8 +49,8 @@ namespace MyScript.IInk.UIReferenceImplementation
 
             MyScriptInter = RegisterFontFamily("MyScriptInter-Regular.otf", "MyScriptInter", _defaultFamily);
             MyScriptInterBold = RegisterFontFamily("MyScriptInter-Bold.otf", "MyScriptInter", _defaultFamily);
-            StixRegular = RegisterFontFamily("STIXGeneral.ttf", "STIXGeneral", _defaultStixFamily);
-            StixItalic = RegisterFontFamily("STIX-Italic.otf", "STIX", _defaultStixFamily);
+            StixRegular = RegisterFontFamily("STIXTwoMath-Regular.otf", "STIX Two Math", _defaultStixFamily);
+            StixItalic = RegisterFontFamily("STIXTwoText-Italic.otf", "STIX Two Text", _defaultStixFamily);
 
             _initialized = true;
         }

@@ -135,12 +135,12 @@
       <Link>fonts\MyScriptInter-Regular.otf</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\fonts\STIX-Italic.otf">
-      <Link>fonts\STIX-Italic.otf</Link>
+    <Content Include="..\fonts\STIXTwoText-Italic.otf">
+      <Link>fonts\STIXTwoText-Italic.otf</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\fonts\STIXGeneral.ttf">
-      <Link>fonts\STIXGeneral.ttf</Link>
+    <Content Include="..\fonts\STIXTwoMath-Regular.otf">
+      <Link>fonts\STIXTwoMath-Regular.otf</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\recognition-assets\resources\analyzer\ank-diagram.res">
