@@ -121,6 +121,10 @@ namespace MyScript.IInk.Demo
             // Allow converting shapes by holding the pen in position
             _engine.Configuration.SetBoolean("raw-content.convert.shape-on-hold", true);
 
+            // Configure shapes axis snapping
+            var shapeSnapAxis = new string[] { "triangle", "rectangle", "rhombus", "parallelogram", "ellipse" };
+            _engine.Configuration.SetStringArray("raw-content.shape.snap-axis", shapeSnapAxis);
+
             // Configure interactions
             _engine.Configuration.SetString("raw-content.interactive-items", "converted-or-mixed");
             _engine.Configuration.SetBoolean("raw-content.tap-interactions", true);
