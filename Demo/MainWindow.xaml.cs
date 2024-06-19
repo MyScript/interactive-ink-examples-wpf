@@ -34,14 +34,18 @@ namespace MyScript.IInk.Demo
         private string _highlighterWidth;
         private string _highlighterColor;
 
-        private const float  PenMediumWidth = 0.625F;       // default (in mm)
+        private const float  PenThinWidth   = 0.25F;
+        private const float  PenMediumWidth = 0.65F;        // default (in mm)
+        private const float  PenLargeWidth  = 1.65F;
         private const string PenBlackColor  = "#000000";    // default
         private const string PenRedColor    = "#EA4335";
         private const string PenGreenColor  = "#34A853";
         private const string PenBlueColor   = "#4285F4";
 
+        private const float  HighlighterThinWidth   = 1.67F;
         private const float  HighlighterMediumWidth = 5.0F;         // default (in mm)
-        private const string HighlighterYellowColor = "#FBBC05";  // default
+        private const float  HighlighterLargeWidth  = 15.0F;
+        private const string HighlighterYellowColor = "#FBBC05";    // default
         private const string HighlighterRedColor    = "#EA4335";
         private const string HighlighterGreenColor  = "#34A853";
         private const string HighlighterBlueColor   = "#4285F4";
@@ -1445,13 +1449,13 @@ namespace MyScript.IInk.Demo
                 {
                     PenMedium.IsChecked = false;
                     PenLarge.IsChecked = false;
-                    _penWidth = (PenMediumWidth / 3.0F).ToString(CultureInfo.InvariantCulture);
+                    _penWidth = PenThinWidth.ToString(CultureInfo.InvariantCulture);
                 }
                 else if (menuItem == PenLarge)
                 {
                     PenThin.IsChecked = false;
                     PenMedium.IsChecked = false;
-                    _penWidth = (PenMediumWidth * 3.0F).ToString(CultureInfo.InvariantCulture);
+                    _penWidth = PenLargeWidth.ToString(CultureInfo.InvariantCulture);
                 }
                 else  // PenMedium
                 {
@@ -1517,13 +1521,13 @@ namespace MyScript.IInk.Demo
                 {
                     HighlighterMedium.IsChecked = false;
                     HighlighterLarge.IsChecked = false;
-                    _highlighterWidth = (HighlighterMediumWidth / 3.0F).ToString(CultureInfo.InvariantCulture);
+                    _highlighterWidth = HighlighterThinWidth.ToString(CultureInfo.InvariantCulture);
                 }
                 else if (menuItem == HighlighterLarge)
                 {
                     HighlighterThin.IsChecked = false;
                     HighlighterMedium.IsChecked = false;
-                    _highlighterWidth = (HighlighterMediumWidth * 3.0F).ToString(CultureInfo.InvariantCulture);
+                    _highlighterWidth = HighlighterLargeWidth.ToString(CultureInfo.InvariantCulture);
                 }
                 else  // HighlighterMedium
                 {
