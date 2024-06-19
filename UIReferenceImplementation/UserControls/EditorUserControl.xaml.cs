@@ -895,7 +895,6 @@ namespace MyScript.IInk.UIReferenceImplementation
             }
 
             // Set new view offset
-            _editor.ClampViewOffset(offset);
             _renderer.ViewOffset = offset;
 
             if (forceInvalidate)
@@ -918,8 +917,6 @@ namespace MyScript.IInk.UIReferenceImplementation
         {
             var oldOffset = _renderer.ViewOffset;
             var newOffset = new MyScript.IInk.Graphics.Point(oldOffset.X + deltaX, oldOffset.Y + deltaY);
-
-            _editor.ClampViewOffset(newOffset);
 
             _renderer.ViewOffset = newOffset;
             Invalidate(_renderer, LayerType.LayerType_ALL);
