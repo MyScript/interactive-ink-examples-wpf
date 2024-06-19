@@ -249,7 +249,7 @@ namespace MyScript.IInk.Demo
                         }
                         catch
                         {
-                            // Can't set this part, try the previous one
+                            // Cannot set this part, try the previous one
                             _editor.Part = null;
                             Type.Text = "";
                             newPart?.Dispose();
@@ -299,7 +299,7 @@ namespace MyScript.IInk.Demo
                         }
                         catch
                         {
-                            // Can't set this part, try the next one
+                            // Cannot set this part, try the next one
                             _editor.Part = null;
                             Type.Text = "";
                             newPart?.Dispose();
