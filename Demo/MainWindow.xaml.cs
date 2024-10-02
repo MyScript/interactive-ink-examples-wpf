@@ -592,6 +592,7 @@ namespace MyScript.IInk.Demo
 
             var availableActions = UcEditor.GetAvailableActions(contentBlock);
             var supportedTypes = _editor.SupportedAddBlockTypes;
+            supportedTypes = supportedTypes.Where(o => o != "Placeholder").ToArray();
 
             if (availableActions.HasFlag(AvailableActions.ADD_BLOCK))
             {
