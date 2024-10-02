@@ -20,6 +20,9 @@ namespace MyScript.IInk.Demo
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const string _configurationDirectory = "configurations";
+        private const string _defaultConfiguration   = "interactivity.json";
+
         private Engine _engine;
         private Editor _editor => UcEditor.Editor;
 
@@ -108,55 +111,12 @@ namespace MyScript.IInk.Demo
             _lastContentSelection = null;
         }
 
-        private void EnableRawContentInteractivity()
-        {
-            // Display grid background
-            _engine.Configuration.SetString("raw-content.line-pattern", "grid");
-
-            // Activate handwriting recognition for text only
-            var recognitionType = new string[] { "text" };
-            _engine.Configuration.SetStringArray("raw-content.recognition.types", recognitionType);
-
-            // Allow converting shapes by holding the pen in position
-            _engine.Configuration.SetBoolean("raw-content.convert.shape-on-hold", true);
-
-            // Configure shapes axis snapping
-            var shapeSnapAxis = new string[] { "triangle", "rectangle", "rhombus", "parallelogram", "ellipse" };
-            _engine.Configuration.SetStringArray("raw-content.shape.snap-axis", shapeSnapAxis);
-
-            // Configure interactions
-            var autoClassifiedInteractivity = Array.Empty<string>();
-            _engine.Configuration.SetStringArray("raw-content.interactive-blocks.auto-classified", autoClassifiedInteractivity);
-            _engine.Configuration.SetBoolean("raw-content.eraser.erase-precisely", false);
-            _engine.Configuration.SetBoolean("raw-content.eraser.dynamic-radius", true);
-            _engine.Configuration.SetBoolean("raw-content.auto-connection", true);
-            var policies = new string[] { "default-with-drag" };
-            _engine.Configuration.SetStringArray("raw-content.edge.policy", policies);
-
-            // Show alignment guides and snap to them
-            var guides = new string[] { "alignment", "text", "square", "square-inside", "image-aspect-ratio", "rotation" };
-            _engine.Configuration.SetStringArray("raw-content.guides.show", guides);
-            _engine.Configuration.SetStringArray("raw-content.guides.snap", guides);
-
-            // Allow gesture detection
-            var gestures = new string[] { "underline", "scratch-out", "strike-through" };
-            _engine.Configuration.SetStringArray("raw-content.pen.gestures", gestures);
-
-            // Allow shape & image rotation
-            var rotations = new string[] { "shape", "image" };
-            _engine.Configuration.SetStringArray("raw-content.rotation", rotations);
-        }
-        private void ConfigureDiagramInteractivity()
-        {
-            // Allow shape rotation
-            var rotations = new string[] { "shape" };
-            _engine.Configuration.SetStringArray("diagram.rotation", rotations);
-        }
         private void EnableStrokePrediction(bool enable, uint durationMs = 16)
         {
             _engine.Configuration.SetBoolean("renderer.prediction.enable", enable);
             _engine.Configuration.SetNumber("renderer.prediction.duration", durationMs);
         }
+
         private void SetMaxRecognitionThreadCount(uint threadCount)
         {
             _engine.Configuration.SetNumber("max-recognition-thread-count", threadCount);
@@ -186,8 +146,6 @@ namespace MyScript.IInk.Demo
             var tempFolder =  Path.Combine(localFolder, "MyScript", "tmp");
             _engine.Configuration.SetString("content-package.temp-folder", tempFolder);
 
-            EnableRawContentInteractivity();
-            ConfigureDiagramInteractivity();
             EnableStrokePrediction(true, 16);
 
             // Configure multithreading for text recognition
@@ -232,7 +190,7 @@ namespace MyScript.IInk.Demo
                 if (index > 0)
                 {
                     ResetSelection();
-                    _editor.Part = null;
+                    SetPart(null);
 
                     while (--index >= 0)
                     {
@@ -242,7 +200,7 @@ namespace MyScript.IInk.Demo
                         {
                             // Select new part
                             newPart = part.Package.GetPart(index);
-                            _editor.Part = newPart;
+                            SetPart(newPart);
                             Type.Text = _packageName + " - " + newPart.Type;
                             part.Dispose();
                             break;
@@ -250,7 +208,7 @@ namespace MyScript.IInk.Demo
                         catch
                         {
                             // Cannot set this part, try the previous one
-                            _editor.Part = null;
+                            SetPart(null);
                             Type.Text = "";
                             newPart?.Dispose();
                         }
@@ -259,7 +217,7 @@ namespace MyScript.IInk.Demo
                     if (index < 0)
                     {
                         // Restore current part if none can be set
-                        _editor.Part = part;
+                        SetPart(part);
                         Type.Text = _packageName + " - " + part.Type;
                     }
 
@@ -282,7 +240,7 @@ namespace MyScript.IInk.Demo
                 if (index < count - 1)
                 {
                     ResetSelection();
-                    _editor.Part = null;
+                    SetPart(null);
 
                     while (++index < count)
                     {
@@ -292,7 +250,7 @@ namespace MyScript.IInk.Demo
                         {
                             // Select new part
                             newPart = part.Package.GetPart(index);
-                            _editor.Part = newPart;
+                            SetPart(newPart);
                             Type.Text = _packageName + " - " + newPart.Type;
                             part.Dispose();
                             break;
@@ -300,7 +258,7 @@ namespace MyScript.IInk.Demo
                         catch
                         {
                             // Cannot set this part, try the next one
-                            _editor.Part = null;
+                            SetPart(null);
                             Type.Text = "";
                             newPart?.Dispose();
                         }
@@ -309,7 +267,7 @@ namespace MyScript.IInk.Demo
                     if (index >= count)
                     {
                         // Restore current part if none can be set
-                        _editor.Part = part;
+                        SetPart(part);
                         Type.Text = _packageName + " - " + part.Type;
                     }
 
@@ -338,73 +296,99 @@ namespace MyScript.IInk.Demo
         {
             var part = _editor.Part;
             var package = part?.Package;
-            _editor.Part = null;
+            SetPart(null);
             part?.Dispose();
             package?.Dispose();
             Type.Text = "";
         }
 
+        Tuple<string, string> SplitPartTypeAndProfile(string partTypeWithProfile)
+        {
+            var profileStart = partTypeWithProfile.LastIndexOf("(");
+            string partType;
+            string profile;
+
+            if (profileStart < 0)
+            {
+                partType = partTypeWithProfile;
+                profile = string.Empty;
+            }
+            else
+            {
+                partType = partTypeWithProfile.Substring(0, profileStart);
+                profile = partTypeWithProfile.Substring(profileStart + 1, partTypeWithProfile.Length - profileStart - 2);
+            }
+
+            return new Tuple<string, string>(partType.Trim(), profile.Trim());
+        }
+
         private void TypeOfContentDialog_AddNewPart(string newPartType, bool newPackage)
         {
-            if (newPartType != string.Empty)
+            (var partType, var profile) = SplitPartTypeAndProfile(newPartType);
+
+            if (String.IsNullOrEmpty(partType))
+                return;
+
+            ResetSelection();
+
+            if (!newPackage && (_editor.Part != null))
             {
-                ResetSelection();
+                var previousPart = _editor.Part;
+                var package = previousPart.Package;
 
-                if (!newPackage && (_editor.Part != null))
+                try
                 {
-                    var previousPart = _editor.Part;
-                    var package = previousPart.Package;
+                    SetPart(null);
 
-                    try
-                    {
-                        _editor.Part = null;
+                    var part = package.CreatePart(partType);
 
-                        var part = package.CreatePart(newPartType);
-                        _editor.Part = part;
-                        Type.Text = _packageName + " - " + part.Type;
+                    SetConfigurationProfile(part, profile);
+                    SetPart(part);
+                    Type.Text = _packageName + " - " + part.Type;
 
-                        previousPart.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        _editor.Part = previousPart;
-                        Type.Text = _packageName + " - " + _editor.Part.Type;
-                        MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    previousPart.Dispose();
                 }
-                else
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        // Save and close current package
-                        SavePackage();
-                        ClosePackage();
-
-                        // Create package and part
-                        var packageName = MakeUntitledFilename();
-                        var package = _engine.CreatePackage(packageName);
-                        var part = package.CreatePart(newPartType);
-                        _editor.Part = part;
-                        _packageName = System.IO.Path.GetFileName(packageName);
-                        Type.Text = _packageName + " - " + part.Type;
-                    }
-                    catch (Exception ex)
-                    {
-                        ClosePackage();
-                        MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    SetPart(previousPart);
+                    Type.Text = _packageName + " - " + _editor.Part.Type;
+                    MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                // Reset viewing parameters
-                UcEditor.ResetView(false);
             }
+            else
+            {
+                try
+                {
+                    // Save and close current package
+                    SavePackage();
+                    ClosePackage();
+
+                    // Create package and part
+                    var packageName = MakeUntitledFilename();
+                    var package = _engine.CreatePackage(packageName);
+                    var part = package.CreatePart(partType);
+
+                    SetConfigurationProfile(part, profile);
+                    SetPart(part);
+
+                    _packageName = System.IO.Path.GetFileName(packageName);
+                    Type.Text = _packageName + " - " + part.Type;
+                }
+                catch (Exception ex)
+                {
+                    ClosePackage();
+                    MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
+            // Reset viewing parameters
+            UcEditor.ResetView(false);
         }
 
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
             _editor.Clear();
         }
-
 
         private void Convert_Click(object sender, RoutedEventArgs e)
         {
@@ -458,7 +442,7 @@ namespace MyScript.IInk.Demo
                 }
             }
 
-            if (!string.IsNullOrEmpty(filePath))
+            if (!String.IsNullOrEmpty(filePath))
             {
                 var part = _editor.Part;
                 if (part == null)
@@ -515,7 +499,7 @@ namespace MyScript.IInk.Demo
                 }
             }
 
-            if (!string.IsNullOrEmpty(filePath))
+            if (!String.IsNullOrEmpty(filePath))
             {
                 ResetSelection();
 
@@ -528,7 +512,7 @@ namespace MyScript.IInk.Demo
                     // Open package and select first part
                     var package = _engine.OpenPackage(filePath);
                     var part = package.GetPart(0);
-                    _editor.Part = part;
+                    SetPart(part);
                     _packageName = fileName;
                     Type.Text = _packageName + " - " + part.Type;
                 }
@@ -548,21 +532,91 @@ namespace MyScript.IInk.Demo
             NewFile();
         }
 
+        private void SetConfigurationProfile(ContentPart part, string profile)
+        {
+            var metadata = part.Metadata;
+            metadata.SetString("configuration-profile", profile);
+            part.Metadata = metadata;
+        }
+
+        private string ReadConfigurationFile(string profile)
+        {
+            try
+            {
+                using (var reader = new StreamReader(Path.Combine(_configurationDirectory, profile)))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+            catch
+            {
+                return String.Empty;
+            }
+        }
+
+        private void SetPart(ContentPart part)
+        {
+            _editor.Configuration.Reset();
+
+            if (part != null)
+            {
+                // retrieve the configuration profile from the part metadata
+                var metadata = part.Metadata;
+                string configurationFile = _defaultConfiguration;
+                var profile = metadata.GetString("configuration-profile", "");
+
+                if (!String.IsNullOrEmpty(profile))
+                    configurationFile = part.Type + "/" + profile + ".json";
+
+                // update Editor configuration accordingly
+                var configuration = ReadConfigurationFile(configurationFile);
+                if (!String.IsNullOrEmpty(configuration))
+                    _editor.Configuration.Inject(configuration);
+            }
+
+            _editor.Part = part;
+        }
+
+        string[] GetSupportedPartTypesAndProfile()
+        {
+            List<string> choices = new List<string>();
+
+            foreach (var partType in _engine.SupportedPartTypes)
+            {
+                // Part with default configuration
+                choices.Add(partType);
+
+                // Check the configurations listed in "configurations/" directory for this part type
+                var directoryPath = Path.Combine(_configurationDirectory, partType);
+                if (Directory.Exists(directoryPath))
+                {
+                    var fileList = Directory.GetFiles(directoryPath, "*.json", SearchOption.TopDirectoryOnly);
+                    foreach (var file in fileList)
+                    {
+                        var filename = Path.GetFileNameWithoutExtension(file);
+                        choices.Add(partType + " (" + filename + ")");
+                    }
+                }
+            }
+
+            return choices.ToArray();
+        }
+
         private void NewFile()
         {
-            if (_engine.SupportedPartTypes.Length > 0)
+            var supportedPartTypes = GetSupportedPartTypesAndProfile();
+            if (supportedPartTypes.Length > 0)
             {
                 bool cancelable = _editor.Part != null;
-                TypeOfContentDialog.ShowHandlerDialog(_engine.SupportedPartTypes, true, cancelable);
+                TypeOfContentDialog.ShowHandlerDialog(supportedPartTypes, true, cancelable);
             }
         }
 
         private void NewPart()
         {
-            if (_engine.SupportedPartTypes.Length > 0)
-            {
-                TypeOfContentDialog.ShowHandlerDialog(_engine.SupportedPartTypes, false, true);
-            }
+            var supportedPartTypes = GetSupportedPartTypesAndProfile();
+            if (supportedPartTypes.Length > 0)
+                TypeOfContentDialog.ShowHandlerDialog(supportedPartTypes, false, true);
         }
 
         private string MakeUntitledFilename()
@@ -1159,7 +1213,7 @@ namespace MyScript.IInk.Demo
                     Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
 
                     dlg.FileName = "Interactive Ink Document"; // Default file name
-                    dlg.DefaultExt = System.String.Empty; // Default file extension
+                    dlg.DefaultExt = String.Empty; // Default file extension
                     dlg.Filter = filterList; // Filter files by extension
 
                     bool? result = dlg.ShowDialog();
@@ -1425,14 +1479,14 @@ namespace MyScript.IInk.Demo
         {
             if (pointerTool == PointerTool.PEN)
             {
-                string newStyle = (string.IsNullOrEmpty(_penWidth) ? _penWidth : "-myscript-pen-width: " + _penWidth + "; ")
-                                + (string.IsNullOrEmpty(_penColor) ? _penColor : "color: " + _penColor + "; ");
+                string newStyle = (String.IsNullOrEmpty(_penWidth) ? _penWidth : "-myscript-pen-width: " + _penWidth + "; ")
+                                + (String.IsNullOrEmpty(_penColor) ? _penColor : "color: " + _penColor + "; ");
                 UcEditor.SetToolStyle(PointerTool.PEN, newStyle);
             }
             else if (pointerTool == PointerTool.HIGHLIGHTER)
             {
-                string newStyle = (string.IsNullOrEmpty(_highlighterWidth) ? _highlighterWidth : "-myscript-pen-width: " + _highlighterWidth + "; ")
-                                + (string.IsNullOrEmpty(_highlighterColor) ? _highlighterColor : "color: " + _highlighterColor + "; ");
+                string newStyle = (String.IsNullOrEmpty(_highlighterWidth) ? _highlighterWidth : "-myscript-pen-width: " + _highlighterWidth + "; ")
+                                + (String.IsNullOrEmpty(_highlighterColor) ? _highlighterColor : "color: " + _highlighterColor + "; ");
                 UcEditor.SetToolStyle(PointerTool.HIGHLIGHTER, newStyle);
             }
         }
@@ -1588,4 +1642,3 @@ namespace MyScript.IInk.Demo
         }
     }
 }
-
