@@ -54,6 +54,31 @@ namespace MyScript.IInk.UIReferenceImplementation
                 var dispatcher = _ucEditor.Dispatcher;
                 dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnContentChanged(blockIds); }));
             }
+
+            // auto-solve Math blocks containing an (almost) equal sign
+            foreach (string blockId in blockIds)
+            {
+                ContentBlock block = editor.GetBlockById(blockId);
+                if (block != null && block.Type.Equals("Math") && editor.Part.Type == "Raw Content")
+                {
+                    try
+                    {
+                        MathSolverController mathSolver = editor.MathSolverController;
+                        string[] actions = mathSolver.GetAvailableActions(blockId, null);
+                        if (actions.Contains("numerical-computation")
+                            && editor.GetConversionState(block) == ConversionState.HANDWRITING)
+                        {
+                            string latexExport = editor.Export_(block, MimeType.LATEX);
+                            if (latexExport.Contains("=") || latexExport.Contains("\\approx") || latexExport.Contains("\\simeq"))
+                                mathSolver.ApplyAction(blockId, "numerical-computation", null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                      OnError(editor, blockId, EditorError.GENERIC, "Auto-solve Math block error: " + ex.ToString());
+                    }
+                }
+            }
         }
 
         public void SelectionChanged(Editor editor)
