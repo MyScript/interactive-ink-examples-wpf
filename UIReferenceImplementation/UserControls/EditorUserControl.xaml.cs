@@ -876,6 +876,9 @@ namespace MyScript.IInk.UIReferenceImplementation
 
         public void ResetView(bool forceInvalidate)
         {
+            if (!(_editor?.Renderer is Renderer _renderer) || !HasPart())
+                return;
+
             // Reset view offset and scale
             _renderer.ViewScale = 1;
             _renderer.ViewOffset = new MyScript.IInk.Graphics.Point(0, 0);
