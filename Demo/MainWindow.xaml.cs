@@ -645,16 +645,17 @@ namespace MyScript.IInk.Demo
             var contextMenu = new ContextMenu();
 
             var availableActions = UcEditor.GetAvailableActions(contentBlock);
-            var supportedTypes = _editor.SupportedAddBlockTypes;
-            supportedTypes = supportedTypes.Where(o => o != "Placeholder").ToArray();
 
             if (availableActions.HasFlag(AvailableActions.ADD_BLOCK))
             {
+                var supportedBlocks = _editor.SupportedAddBlockTypes;
+                supportedBlocks = supportedBlocks.Where(o => o != "Placeholder").ToArray();
+
                 MenuItem addItem = new MenuItem { Header = "Add..." };
-                for (int i = 0; i < supportedTypes.Count(); ++i)
+                for (int i = 0; i < supportedBlocks.Count(); ++i)
                 {
-                    MenuItem addBlockItem = new MenuItem { Header = "Add " + supportedTypes[i], Tag = supportedTypes[i] };
-                    if (supportedTypes[i] == "Image")
+                    MenuItem addBlockItem = new MenuItem { Header = "Add " + supportedBlocks[i], Tag = supportedBlocks[i] };
+                    if (supportedBlocks[i] == "Image")
                         addBlockItem.Click += AddImage;
                     else
                         addBlockItem.Click += AddBlock;
@@ -792,6 +793,60 @@ namespace MyScript.IInk.Demo
                 }
             }
 
+            if (availableActions.HasFlag(AvailableActions.SELECTION_MODE))
+            {
+                var supportedModes = _editor.GetAvailableSelectionModes();
+
+                MenuItem modeMenuItem = new MenuItem { Header = "Selection mode..." };
+                contextMenu.Items.Add(modeMenuItem);
+
+                if (supportedModes.Contains(ContentSelectionMode.LASSO))
+                {
+                    MenuItem lassoItem = new MenuItem { Header = "Lasso" };
+                    lassoItem.Click += SelectModeLasso;
+                    modeMenuItem.Items.Add(lassoItem);
+                }
+                if (supportedModes.Contains(ContentSelectionMode.ITEM))
+                {
+                    MenuItem itemItem = new MenuItem { Header = "Item" };
+                    itemItem.Click += SelectModeItem;
+                    modeMenuItem.Items.Add(itemItem);
+                }
+                if (supportedModes.Contains(ContentSelectionMode.RESIZE))
+                {
+                    MenuItem resizeItem = new MenuItem { Header = "Resize" };
+                    resizeItem.Click += SelectModeResize;
+                    modeMenuItem.Items.Add(resizeItem);
+                }
+            }
+
+            if (availableActions.HasFlag(AvailableActions.SELECTION_TYPE))
+            {
+                var supportedTypes = _editor.GetAvailableSelectionTypes(contentBlock);
+
+                MenuItem typeMenuItem = new MenuItem { Header = "Selection type..." };
+                contextMenu.Items.Add(typeMenuItem);
+
+                if (supportedTypes.Contains("Text"))
+                {
+                    MenuItem textItem = new MenuItem { Header = "Text" };
+                    textItem.Click += SelectTypeText;
+                    typeMenuItem.Items.Add(textItem);
+                    MenuItem textSBItem = new MenuItem { Header = "Text - Single Block" };
+                    textSBItem.Click += SelectTypeTextSingleBlock;
+                    typeMenuItem.Items.Add(textSBItem);
+                }
+                if (supportedTypes.Contains("Math"))
+                {
+                    MenuItem mathItem = new MenuItem { Header = "Math" };
+                    mathItem.Click += SelectTypeMath;
+                    typeMenuItem.Items.Add(mathItem);
+                    MenuItem mathSBItem = new MenuItem { Header = "Math - Single Block" };
+                    mathSBItem.Click += SelectTypeMathSingleBlock;
+                    typeMenuItem.Items.Add(mathSBItem);
+                }
+            }
+
             if (contextMenu.Items.Count > 0)
             {
                 this.ContextMenu = contextMenu;
@@ -916,6 +971,60 @@ namespace MyScript.IInk.Demo
                         pItem.Click += DecreaseIndentation;
                         indentMenuItem.Items.Add(pItem);
                     }
+                }
+            }
+
+            if (availableActions.HasFlag(AvailableActions.SELECTION_MODE))
+            {
+                var supportedModes = _editor.GetAvailableSelectionModes();
+
+                MenuItem modeMenuItem = new MenuItem { Header = "Selection mode..." };
+                contextMenu.Items.Add(modeMenuItem);
+
+                if (supportedModes.Contains(ContentSelectionMode.LASSO))
+                {
+                    MenuItem lassoItem = new MenuItem { Header = "Lasso" };
+                    lassoItem.Click += SelectModeLasso;
+                    modeMenuItem.Items.Add(lassoItem);
+                }
+                if (supportedModes.Contains(ContentSelectionMode.ITEM))
+                {
+                    MenuItem itemItem = new MenuItem { Header = "Item" };
+                    itemItem.Click += SelectModeItem;
+                    modeMenuItem.Items.Add(itemItem);
+                }
+                if (supportedModes.Contains(ContentSelectionMode.RESIZE))
+                {
+                    MenuItem resizeItem = new MenuItem { Header = "Resize" };
+                    resizeItem.Click += SelectModeResize;
+                    modeMenuItem.Items.Add(resizeItem);
+                }
+            }
+
+            if (availableActions.HasFlag(AvailableActions.SELECTION_TYPE))
+            {
+                var supportedTypes = _editor.GetAvailableSelectionTypes(contentSelection);
+
+                MenuItem typeMenuItem = new MenuItem { Header = "Selection type..." };
+                contextMenu.Items.Add(typeMenuItem);
+
+                if (supportedTypes.Contains("Text"))
+                {
+                    MenuItem textItem = new MenuItem { Header = "Text" };
+                    textItem.Click += SelectTypeText;
+                    typeMenuItem.Items.Add(textItem);
+                    MenuItem textSBItem = new MenuItem { Header = "Text - Single Block" };
+                    textSBItem.Click += SelectTypeTextSingleBlock;
+                    typeMenuItem.Items.Add(textSBItem);
+                }
+                if (supportedTypes.Contains("Math"))
+                {
+                    MenuItem mathItem = new MenuItem { Header = "Math" };
+                    mathItem.Click += SelectTypeMath;
+                    typeMenuItem.Items.Add(mathItem);
+                    MenuItem mathSBItem = new MenuItem { Header = "Math - Single Block" };
+                    mathSBItem.Click += SelectTypeMathSingleBlock;
+                    typeMenuItem.Items.Add(mathSBItem);
                 }
             }
 
@@ -1388,6 +1497,90 @@ namespace MyScript.IInk.Demo
             {
                 if (_lastContentSelection != null)
                     _editor.Indent(_lastContentSelection, -1);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectModeLasso(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _editor.SetSelectionMode(ContentSelectionMode.LASSO);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectModeItem(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _editor.SetSelectionMode(ContentSelectionMode.ITEM);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectModeResize(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _editor.SetSelectionMode(ContentSelectionMode.RESIZE);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectTypeText(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _editor.SetSelectionType(_lastContentSelection, "Text", false);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectTypeTextSingleBlock(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _editor.SetSelectionType(_lastContentSelection, "Text", true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectTypeMath(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _editor.SetSelectionType(_lastContentSelection, "Math", false);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectTypeMathSingleBlock(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _editor.SetSelectionType(_lastContentSelection, "Math", true);
             }
             catch (Exception ex)
             {

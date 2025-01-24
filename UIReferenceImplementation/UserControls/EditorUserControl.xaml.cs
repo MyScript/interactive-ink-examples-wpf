@@ -269,7 +269,9 @@ namespace MyScript.IInk.UIReferenceImplementation
             PASTE             = 1 << 5,     /// Paste.
             IMPORT            = 1 << 6,     /// Import. See <c>Editor.GetSupportedImportMimeTypes</c>.
             EXPORT            = 1 << 7,     /// Export. See <c>Editor.GetSupportedExportMimeTypes</c>.
-            FORMAT_TEXT       = 1 << 8      /// Change Text blocks format.
+            FORMAT_TEXT       = 1 << 8,     /// Change Text blocks format.
+            SELECTION_MODE    = 1 << 9,     /// Change selection mode.
+            SELECTION_TYPE    = 1 << 10     /// Change selection type.
         }
 
         public ContextualActions GetAvailableActions(ContentBlock contentBlock)
@@ -294,19 +296,23 @@ namespace MyScript.IInk.UIReferenceImplementation
 
                 var isEmpty = _editor.IsEmpty(contentBlock);
 
-                var supportedTypes   = _editor.SupportedAddBlockTypes;
+                var supportedBlocks  = _editor.SupportedAddBlockTypes;
                 var supportedExports = _editor.GetSupportedExportMimeTypes(onRawContent ? rootBlock : contentBlock);
                 var supportedImports = _editor.GetSupportedImportMimeTypes(contentBlock);
                 var supportedStates  = _editor.GetSupportedTargetConversionStates(contentBlock);
                 var supportedFormats = _editor.GetSupportedTextFormats(contentBlock);
+                var supportedModes   = _editor.GetAvailableSelectionModes();
+                var supportedTypes   = _editor.GetAvailableSelectionTypes(contentBlock);
 
-                var hasTypes   = (supportedTypes   != null) && supportedTypes.Any();
+                var hasBlocks  = (supportedBlocks  != null) && supportedBlocks.Any();
                 var hasExports = (supportedExports != null) && supportedExports.Any();
                 var hasImports = (supportedImports != null) && supportedImports.Any();
                 var hasStates  = (supportedStates  != null) && supportedStates.Any();
                 var hasFormats = (supportedFormats != null) && supportedFormats.Any();
+                var hasModes   = (supportedModes   != null) && supportedModes.Any();
+                var hasTypes   = (supportedTypes   != null) && supportedTypes.Any();
 
-                if (hasTypes && (!onTextDocument || isRoot))
+                if (hasBlocks && (!onTextDocument || isRoot))
                     actions |= ContextualActions.ADD_BLOCK;
                 if (!isRoot)
                     actions |= ContextualActions.REMOVE;
@@ -324,6 +330,10 @@ namespace MyScript.IInk.UIReferenceImplementation
                     actions |= ContextualActions.EXPORT;
                 if (hasFormats)
                     actions |= ContextualActions.FORMAT_TEXT;
+                if (hasModes)
+                    actions |= ContextualActions.SELECTION_MODE;
+                if (hasTypes)
+                    actions |= ContextualActions.SELECTION_TYPE;
             }
 
             return actions;
@@ -343,10 +353,14 @@ namespace MyScript.IInk.UIReferenceImplementation
             var supportedExports = _editor.GetSupportedExportMimeTypes(contentSelection);
             var supportedStates  = _editor.GetSupportedTargetConversionStates(contentSelection);
             var supportedFormats = _editor.GetSupportedTextFormats(contentSelection);
+            var supportedModes   = _editor.GetAvailableSelectionModes();
+            var supportedTypes   = _editor.GetAvailableSelectionTypes(contentSelection);
 
             var hasExports = (supportedExports != null) && supportedExports.Any();
             var hasStates  = (supportedStates  != null) && supportedStates.Any();
             var hasFormats = (supportedFormats != null) && supportedFormats.Any();
+            var hasModes   = (supportedModes   != null) && supportedModes.Any();
+            var hasTypes   = (supportedTypes   != null) && supportedTypes.Any();
 
             // Erase
             actions |= ContextualActions.REMOVE;
@@ -360,6 +374,10 @@ namespace MyScript.IInk.UIReferenceImplementation
                 actions |= ContextualActions.EXPORT;
             if (hasFormats)
                 actions |= ContextualActions.FORMAT_TEXT;
+            if (hasModes)
+                actions |= ContextualActions.SELECTION_MODE;
+            if (hasTypes)
+                actions |= ContextualActions.SELECTION_TYPE;
 
             return actions;
         }
