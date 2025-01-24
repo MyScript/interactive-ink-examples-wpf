@@ -525,6 +525,11 @@ namespace MyScript.IInk.UIReferenceImplementation
                     _activeBlock.Dispose();
                     _activeBlock = newActiveBlock;
                 }
+                else
+                {
+                    Visibility = Visibility.Hidden;
+                    return;
+                }
             }
 
             if (_activeBlock != null)
