@@ -55,11 +55,11 @@ namespace MyScript.IInk.UIReferenceImplementation
                 dispatcher.BeginInvoke(new Action(() => { _ucEditor.smartGuide.OnContentChanged(blockIds); }));
             }
 
-            // auto-solve Math blocks containing an (almost) equal sign
+            // Auto-solve isolated Math blocks
             foreach (string blockId in blockIds)
             {
                 ContentBlock block = editor.GetBlockById(blockId);
-                if (block != null && block.Type.Equals("Math") && editor.Part.Type == "Raw Content")
+                if (block != null && block.Type.Equals("Math") && editor.Part.Type == "Raw Content" && !block.Parent.Type.Equals("Text"))
                 {
                     try
                     {
@@ -68,9 +68,7 @@ namespace MyScript.IInk.UIReferenceImplementation
                         if (actions.Contains("numerical-computation")
                             && editor.GetConversionState(block) == ConversionState.HANDWRITING)
                         {
-                            string latexExport = editor.Export_(block, MimeType.LATEX);
-                            if (latexExport.Contains("=") || latexExport.Contains("\\approx") || latexExport.Contains("\\simeq"))
-                                mathSolver.ApplyAction(blockId, "numerical-computation", null);
+                            mathSolver.ApplyAction(blockId, "numerical-computation", null);
                         }
                     }
                     catch (Exception ex)
