@@ -59,7 +59,7 @@ namespace MyScript.IInk.UIReferenceImplementation
             foreach (string blockId in blockIds)
             {
                 ContentBlock block = editor.GetBlockById(blockId);
-                if (block != null && block.Type.Equals("Math") && editor.Part.Type == "Raw Content" && !block.Parent.Type.Equals("Text"))
+                if (block != null && block.Type.Equals("Math") && editor.Part.Type == "Raw Content")
                 {
                     try
                     {
