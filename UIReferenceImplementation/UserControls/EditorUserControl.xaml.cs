@@ -64,11 +64,18 @@ namespace MyScript.IInk.UIReferenceImplementation
                     try
                     {
                         MathSolverController mathSolver = editor.MathSolverController;
-                        string[] actions = mathSolver.GetAvailableActions(blockId, null);
-                        if (actions.Contains("numerical-computation")
-                            && editor.GetConversionState(block) == ConversionState.HANDWRITING)
+                        var configStrokes = editor.Engine.CreateParameterSet();
+                        configStrokes.SetString("math.solver.rendered-ink-type", "strokes");
+                        var configGlyphs = editor.Engine.CreateParameterSet();
+                        configGlyphs.SetString("math.solver.rendered-ink-type", "glyphs");
+
+                        bool solveAsStrokes = mathSolver.GetDiagnostic(blockId, "numerical-computation", configStrokes) == MathDiagnostic.ALLOWED;
+                        bool solveAsGlyphs  = mathSolver.GetDiagnostic(blockId, "numerical-computation", configGlyphs)  == MathDiagnostic.ALLOWED;
+
+                        if (solveAsStrokes && solveAsGlyphs) // not already solved as strokes or glyphs
                         {
-                            mathSolver.ApplyAction(blockId, "numerical-computation", null);
+                            var config = editor.GetConversionState(block).HasFlag(ConversionState.HANDWRITING) ? configStrokes : configGlyphs;
+                            mathSolver.ApplyAction(blockId, "numerical-computation", config);
                         }
                     }
                     catch (Exception ex)
