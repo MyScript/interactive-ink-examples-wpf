@@ -572,6 +572,8 @@ namespace MyScript.IInk.Demo
                 var configuration = ReadConfigurationFile(configurationFile);
                 if (!String.IsNullOrEmpty(configuration))
                     _editor.Configuration.Inject(configuration);
+                else if (!String.IsNullOrEmpty(profile))
+                    throw new FileNotFoundException($"Configuration profile '{profile}' not found", configurationFile);
             }
 
             _editor.Part = part;
